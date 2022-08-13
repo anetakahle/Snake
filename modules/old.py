@@ -15,8 +15,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 # import pygame
 from time import sleep
-import test as test
-
 
 # In[2]:
 
