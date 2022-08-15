@@ -62,7 +62,7 @@ class Render:
             self.server.init()
 
         while self.run:
-            if not self.callbacks.continueCallback():
+            if not self.callbacks.fpsCallback():
                 self.run = False
                 break
 
@@ -114,6 +114,9 @@ class Render:
 
     def _getMaxVal(self):
         m = 0
+
+
+        self.server.getGameState().iterateWorld()
         for y in self._getGameWorld():
             for x in y:
                 if x > m:

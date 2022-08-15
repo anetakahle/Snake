@@ -1,11 +1,11 @@
 class RenderCallback:
     # properties -----------
 
-    continueCallback = lambda x: True
+    fpsCallback = lambda x: True
     inputCallback = lambda x: True
 
     # ctor -------------
 
     def __init__(self, continueCallback, inputCallback):
-        self.continueCallback = continueCallback
+        self.fpsCallback = continueCallback
         self.inputCallback = inputCallback

@@ -1,10 +1,10 @@
 import random
 import math
 import numpy as np
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as pl
 from time import sleep
 from .internal import gameState as gs
-from . import enums
+from . import enums, serverConfig
 
 class Server:
 
@@ -13,10 +13,12 @@ class Server:
     gameState = enums.gameStates.NotStarted
     score = 0
     size = 8
+    config = serverConfig.defaultConfig
 
     # ctor ----------------------
 
-    def __init__(self):
+    def __init__(self, config = serverConfig.defaultConfig):
+        self.config = config
         self.init()
         return;
 
@@ -24,13 +26,19 @@ class Server:
 
     def init(self):
         self._reset()
+        if self.config.mode == enums.serverModes.Auto:
+            while self.config.gamesToPlay > 0:
+                self.config.gamesToPlay -= 1
+                self.config.newGameCallback(self.config.gamesToPlay)
+                self._playGameAuto()
+                # todo save snapshot
         return;
 
     def step(self, direction):
         self._step(direction)
 
     def getGameState(self):
-        return gs.GameState(self.world, self.gameState, self.score);
+        return gs.GameState(self);
 
     # private ------------------------------
 
@@ -44,6 +52,20 @@ class Server:
         self.world[y + 1][x] = 2  # body
         self._generateApple()
         return;
+
+    def _playGameAuto(self):
+        ttl = self.config.limitMovesPerGame
+        while self._isGameRunning():
+            action = self.config.fpsCallback(ttl)
+            ttl -= 1
+
+            if ttl < 0:
+                break
+
+            if action == enums.directions.Skip:
+                continue
+
+            self.step(action)
 
     def _generateApple(self):
         y = random.randint(0, self.size - 1)

@@ -3,7 +3,8 @@ import enum
 class directions(enum.Enum):
     Left = -1,
     Forward = 0,
-    Right = 1
+    Right = 1,
+    Skip = 2
 
 class logTypes(enum.Enum):
     Info = 0
@@ -27,3 +28,7 @@ class inputModes(enum.Enum):
 
 class renderModes(enum.Enum):
     PyGame = 0
+
+class serverModes(enum.Enum):
+    Manual = 0,
+    Auto = 1
