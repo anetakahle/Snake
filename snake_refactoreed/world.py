@@ -3,6 +3,7 @@ import math
 import numpy as np
 
 
+
 class World:
 
     def __init__(self, size=8):
@@ -82,8 +83,8 @@ class World:
         tail_value = 0
         for y in range(self.size):
             for x in range(self.size):
-                if self.obs[y, x] == 1:
-                    head = [y, x]
+                #if self.obs[y, x] == 1:
+                #    head = [y, x]
                 elif self.obs[y, x] == 2:
                     neck = [y, x]
                 elif self.obs[y, x] > 2:

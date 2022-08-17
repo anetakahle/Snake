@@ -12,7 +12,7 @@ class ClientRandom(cb.ClientBase):
     # properties ------------
     server = object
     render = object
-    actionsPerSecond = 1
+    actionsPerSecond = 2
     maxFramesIdle = 0
     currentFramesIdle = 0
 
@@ -22,8 +22,8 @@ class ClientRandom(cb.ClientBase):
         renderCallback = rndrCb.RenderCallback(self.frameCallback, self.inputCallback)
         self.server = srvr.Server()
         self.render = rndr.Render(self.server, enums.renderModes.PyGame, renderCallback)
-        self.maxFramesIdle = self.render.fps * self.actionsPerSecond
-        render.render()
+        self.maxFramesIdle = self.render.fps / self.actionsPerSecond
+        self.render.render()
 
     # public ------------
 
@@ -32,7 +32,7 @@ class ClientRandom(cb.ClientBase):
         self.currentFramesIdle += 1
 
         if self.currentFramesIdle > self.maxFramesIdle:
-            self.server.step(random.choice(enums.directions.Forward, enums.directions.Right, enums.directions.Left))
+            self.server.step(random.choice([enums.directions.Forward, enums.directions.Right, enums.directions.Left]))
             self.currentFramesIdle = 0
 
         return True
