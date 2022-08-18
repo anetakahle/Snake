@@ -1,3 +1,5 @@
+import modules.enums as enums
+import numpy as np
 
 # ReLU activation
 class Activation_ReLU:

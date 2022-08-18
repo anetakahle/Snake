@@ -1,10 +1,9 @@
 import random
 import math
 import numpy as np
-from matplotlib import pyplot as pl
-from time import sleep
-from .internal import gameState as gs
-from . import enums, serverConfig
+from modules.internal import gameState as gs
+from modules import enums, serverConfig
+import modules.masterServer as ms
 
 class Server:
 
@@ -14,6 +13,8 @@ class Server:
     score = 0
     size = 8
     config = serverConfig.defaultConfig
+    masterServer : ms.MasterServer = None
+    clockFn = None
 
     # ctor ----------------------
 
@@ -25,7 +26,7 @@ class Server:
     # public ----------------------
 
     def init(self):
-        self._reset()
+        self._newGame()
         if self.config.mode == enums.serverModes.Auto:
             while self.config.gamesToPlay > 0:
                 self.config.gamesToPlay -= 1
@@ -49,12 +50,12 @@ class Server:
         return self.scanDirEq(direction, enums.gameObjects.OutsideOfBounds) or self.scanDirEq(direction, enums.gameObjects.Body)
 
     def scanDirEq(self, direction = enums.directions.Forward, object = enums.gameObjects.Apple, distance = 1):
-        x = enums.getVal(self.scanDir(direction, distance))
+        x = enums.getInt(self.scanDir(direction, distance))
 
-        if x > enums.getVal(enums.gameObjects.Neck):
-            x = enums.getVal(enums.gameObjects.Body)
+        if x > enums.getInt(enums.gameObjects.Neck):
+            x = enums.getInt(enums.gameObjects.Body)
 
-        return x == enums.getVal(object)
+        return x == enums.getInt(object)
 
     def scanDir(self, direction = enums.directions.Forward, distance = 1):
         head = self.getObject(enums.gameObjects.Head)
@@ -83,14 +84,38 @@ class Server:
         return self.world[head[1] + y, head[0] + x]
 
     def step(self, direction):
+
+        if self.masterServer != None:
+            self.masterServer.reportGameEvent(self, enums.gameCommands.ClientMove, {"direction": direction})
+
         self._step(direction)
 
     def getGameState(self):
         return gs.GameState(self);
 
+    def setMasterServer(self, masterServer : ms.MasterServer):
+        self.masterServer = masterServer
+        masterServer.slaveServers.append(self)
+
+    def setTickFn(self, function):
+        self.clockFn = function
+
+    def dispatchClockFn(self) -> bool:
+        if self.clockFn == None:
+            return False
+
+        if self.config.gamesToPlay < 0:
+            return False
+
+        self.clockFn()
+
     # private ------------------------------
 
-    def _reset(self):
+    def _newGame(self):
+
+        if self.masterServer != None:
+            self.masterServer.reportNewGame(self)
+
         self.gameState = enums.gameStates.AwaitingClient
         self.world = np.zeros((self.size, self.size), dtype=int)
         middle = [math.floor((self.size + 1) / 2) - 1, math.ceil((self.size + 1) / 2) - 1]
@@ -115,13 +140,27 @@ class Server:
 
             self.step(action)
 
-    def _generateApple(self):
+            if self.gameState == enums.gameStates.Finished:
+                if self.masterServer != None:
+                    self.masterServer.reportEndGame(self)
+
+                self.score = 0
+                self.gameState = enums.gameStates.NotStarted
+                self._newGame()
+
+    def _generateApple(self) -> (x, y):
         y = random.randint(0, self.size - 1)
         x = random.randint(0, self.size - 1)
         while self.world[y, x] != 0:
             y = random.randint(0, self.size - 1)
             x = random.randint(0, self.size - 1)
-        self.world[y, x] = -1
+        self.world[y, x] = enums.getInt(enums.gameObjects.Apple)
+
+        if self.masterServer != None:
+            self.masterServer.reportGameEvent(self, enums.gameCommands.DestroyObject, {"object": "apple"})
+            self.masterServer.reportGameEvent(self, enums.gameCommands.SpawnObject, {"object": "apple", "x": x, "y": y})
+
+        return (x, y)
 
     def _isGameRunning(self):
         return self.gameState == enums.gameStates.AwaitingServer or self.gameState == enums.gameStates.AwaitingClient;
@@ -150,7 +189,7 @@ class Server:
                 if self.world[y][x] > tail_value:
                     tail = [y, x]
                     tail_value = self.world[y][x]
-        if_apple = self.world[tail[0]][tail[1]]
+        lastTailPiece = self.world[tail[0]][tail[1]]
         self.world[tail[0]][tail[1]] = 0
         y = head[0] - neck[0]
         x = head[1] - neck[1]
@@ -179,17 +218,16 @@ class Server:
         if self._isGameRunning():
             if self.world[new_head_y][new_head_x] == -1:
                 apple_collected = True
-                self.world[tail[0]][tail[1]] = if_apple
+                self._incTail(tail[1], tail[0], lastTailPiece)
             self.world[new_head_y][new_head_x] = 1
-
-        self._postStep(apple_collected)
-
-    def _postStep(self, apple_collected):
-        if self.gameState == enums.gameStates.Finished:
-            self.score = 0
-            self.gameState = enums.gameStates.NotStarted
-            self._reset()
 
         if apple_collected is True:
             self._generateApple()
             self.score += 1
+
+            if self.masterServer != None:
+                self.masterServer.reportGameEvent(self, enums.gameCommands.SetProperty, {"property": "score", "op": "inc", "value": 1})
+                self.masterServer.reportGameEvent(self, enums.gameCommands.CallMethod, {"method": "_incTail", "pars": {"x": x, "y": y, "lastTailPiece": lastTailPiece}})
+
+    def _incTail(self, x, y, lastTailPiece):
+        self.world[y, x] = lastTailPiece

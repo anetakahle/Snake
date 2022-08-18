@@ -1,7 +1,7 @@
 import enum
 import numpy
 
-def getVal(enumEntry):
+def getInt(enumEntry):
     if isinstance(enumEntry, numpy.int64):
         return int(enumEntry)
     if isinstance(enumEntry.value , int):
@@ -61,3 +61,26 @@ class gameObjects(enum.Enum):
         elif self.value == 2:
             return "Zacatek tela"
         return "Telo"
+
+class weightModes(enum.Enum):
+    Zero = 0
+    One = 1
+    Random = 2
+
+class biasModes(enum.Enum):
+    Zero = 0
+    One = 1
+    Random = 2
+
+class movementModes(enum.Enum):
+    Human = 0
+    Ai = 1
+
+class gameCommands(enum.Enum):
+    Unknown = -1
+    SpawnObject = 0
+    ClientMove = 1
+    DestroyObject = 2
+    SetProperty = 3
+    CallMethod = 4,
+    GameEnd = 5

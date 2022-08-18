@@ -1,4 +1,4 @@
-from . import enums
+from modules import enums
 
 class ServerConfig():
 

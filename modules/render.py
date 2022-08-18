@@ -1,7 +1,6 @@
-from . import enums
+from modules import enums, pyGameApi as pga
 import pygame
-from . import pyGameApi as pga
-from . import renderCallback as rc
+
 
 class Render:
 
