@@ -1,14 +1,81 @@
-import numpy as np
+import random
+
+import modules.render as rndr
+import modules.renderCallback as rndrCb
+import modules.clients.base.clientBase as cb
+
+
+class ClientGenetic(cb.ClientBase):
+
+    # properties ------------
+    server = object
+    render = object
+    actionsPerSecond = 10
+    maxFramesIdle = 0
+    currentFramesIdle = 0
+
+    # ctor -----------
+
+    def init(self):
+        renderCallback = rndrCb.RenderCallback(self.frameCallback, self.inputCallback)
+        self.server = srvr.Server()
+        self.render = rndr.Render(self.server, enums.renderModes.PyGame, renderCallback)
+        self.maxFramesIdle = self.render.fps / self.actionsPerSecond
+        self.render.render()
+
+    # public ------------
+
+    def brain(self):
+        if self.server.scanDirEq(enums.directions.Left, enums.gameObjects.Apple):
+            self.server.step(enums.directions.Left)
+            return
+        elif self.server.scanDirEq(enums.directions.Right, enums.gameObjects.Apple):
+            self.server.step(enums.directions.Right)
+            return
+        elif self.server.scanDirEq(enums.directions.Forward, enums.gameObjects.Apple):
+            self.server.step(enums.directions.Forward)
+            return
+
+        if self.server.scanDirBlocked(enums.directions.Forward):
+            if self.server.scanDirBlocked(enums.directions.Right):
+                self.server.step(enums.directions.Left)
+                return
+            elif self.server.scanDirBlocked(enums.directions.Left):
+                self.server.step(enums.directions.Right)
+                return
+            self.server.step(random.choice([enums.directions.Left, enums.directions.Right]))
+            return
+
+        possibleActions = [enums.directions.Forward]
+        if not self.server.scanDirBlocked(enums.directions.Right):
+            possibleActions.append(enums.directions.Right)
+        if not self.server.scanDirBlocked(enums.directions.Left):
+            possibleActions.append(enums.directions.Left)
+        self.server.step(random.choice(possibleActions))
+
+    def frameCallback(self):
+
+        self.currentFramesIdle += 1
+
+        if self.currentFramesIdle > self.maxFramesIdle:
+            self.brain()
+            self.currentFramesIdle = 0
+
+        return True
+
+    def inputCallback(self, event):
+        pass
+
+
 #import tensorflow as tf
 #from tensorflow.python.keras.layers import Dense
 #from tensorflow.python.keras.models import Sequential
 #from tensorflow.python.keras.optimizer_v2.adam import Adam
-import sys
 import numpy as  np
-import matplotlib
-from . import serverConfig as sc, server as srvr, clientBase as cb, enums
+from modules import serverConfig as sc, server as srvr, enums
+from modules.clients.base import clientBase as cb
 from modules.GeneticAI import Activation_ReLU as relu, Dense_Layer as denl
-import logging, sys
+
 
 class ClientGenetic(cb.ClientBase):
 

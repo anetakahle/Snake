@@ -149,7 +149,7 @@ class Render:
         isMax = val == self._getMaxVal()
         s, oh, oq = self.s, self.oh, self.oq
 
-        self.log("jsem blok: " + str(val) + " pp: " + str(pp) + " pn:" + str(pn) + " jsem posledni: " + str(isMax))
+        #self.log("jsem blok: " + str(val) + " pp: " + str(pp) + " pn:" + str(pn) + " jsem posledni: " + str(isMax))
         if pp[0] == -1:
             return False
         if pp[0] - 1 == xP and pp[1] == yP:

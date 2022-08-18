@@ -2,25 +2,31 @@ import modules.server as srvr
 import modules.render as rndr
 import modules.enums as enums
 import modules.renderCallback as rndrCb
-import modules.clientBase as cb
+import modules.clients.base.clientBase as cb
 import pygame
 
 class ClientHuman(cb.ClientBase):
 
     # properties ------------
     server = object
+    render = object
 
     # ctor -----------
 
     def init(self):
         renderCallback = rndrCb.RenderCallback(self.frameCallback, self.inputCallback)
         self.server = srvr.Server()
-        render = rndr.Render(self.server, enums.renderModes.PyGame, renderCallback)
-        render.render()
+        self.render = rndr.Render(self.server, enums.renderModes.PyGame, renderCallback)
+        self.render.render()
 
     # public ------------
 
     def frameCallback(self):
+
+        self.render.log("Nalevo je: " + str(self.server.scanDir(enums.directions.Left, 1)), enums.logTypes.Warn)
+        self.render.log("Rovne je: " + str(self.server.scanDir(enums.directions.Forward, 1)), enums.logTypes.Warn)
+        self.render.log("Napravo je: " + str(self.server.scanDir(enums.directions.Right, 1)), enums.logTypes.Warn)
+
         return True
 
     def inputCallback(self, event):

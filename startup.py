@@ -1,4 +1,5 @@
-from modules import clientHuman
+from modules.clients import clientHuman
+
 
 def setupClientHuman():
    humanClient = clientHuman.ClientHuman()

@@ -1,4 +1,12 @@
 import enum
+import numpy
+
+def getVal(enumEntry):
+    if isinstance(enumEntry, numpy.int64):
+        return int(enumEntry)
+    if isinstance(enumEntry.value , int):
+        return int(enumEntry.value)
+    return int(enumEntry.value[0])
 
 class directions(enum.Enum):
     Left = -1,
@@ -30,5 +38,26 @@ class renderModes(enum.Enum):
     PyGame = 0
 
 class serverModes(enum.Enum):
-    Manual = 0,
+    Manual = 0
     Auto = 1
+
+class gameObjects(enum.Enum):
+    OutsideOfBounds = -2
+    Apple = -1
+    Void = 0
+    Head = 1
+    Neck = 2
+    Body = 30
+
+    def __str__(self):
+        if self.value == -2:
+            return "Mimo pole"
+        elif self.value == -1:
+            return "Jablko"
+        elif self.value == 0:
+            return "Prazdno"
+        elif self.value == 1:
+            return "Hlava"
+        elif self.value == 2:
+            return "Zacatek tela"
+        return "Telo"

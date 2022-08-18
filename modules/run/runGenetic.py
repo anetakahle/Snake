@@ -1,4 +1,4 @@
-from modules import clientGenetic
+from modules.clients import clientGenetic
 
 agent = clientGenetic.ClientGenetic()
 agent.init()

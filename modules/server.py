@@ -31,8 +31,56 @@ class Server:
                 self.config.gamesToPlay -= 1
                 self.config.newGameCallback(self.config.gamesToPlay)
                 self._playGameAuto()
-                # todo save snapshot
         return;
+
+    def getObject(self, object = enums.gameObjects.Head):
+        xx = 0
+        yy = 0
+        for y in self.world:
+            for x in y:
+                if x == object.value:
+                    return [xx, yy]
+                xx += 1
+            yy +=1
+            xx = 0
+        return [0, 0]
+
+    def scanDirBlocked(self, direction = enums.directions.Forward, distance = 1):
+        return self.scanDirEq(direction, enums.gameObjects.OutsideOfBounds) or self.scanDirEq(direction, enums.gameObjects.Body)
+
+    def scanDirEq(self, direction = enums.directions.Forward, object = enums.gameObjects.Apple, distance = 1):
+        x = enums.getVal(self.scanDir(direction, distance))
+
+        if x > enums.getVal(enums.gameObjects.Neck):
+            x = enums.getVal(enums.gameObjects.Body)
+
+        return x == enums.getVal(object)
+
+    def scanDir(self, direction = enums.directions.Forward, distance = 1):
+        head = self.getObject(enums.gameObjects.Head)
+        neck = self.getObject(enums.gameObjects.Neck)
+        x = head[0] - neck[0]
+        y = head[1] - neck[1]
+        lookDir = [y, x]
+        lookupTable = [[0, -1], [-1, 0], [0, 1], [1, 0]]
+        lookupTableIndex = lookupTable.index(lookDir)
+
+        if lookupTableIndex == 3 and direction == enums.directions.Right:
+            shift = lookupTable[0]
+        else:
+            shift = lookupTable[lookupTableIndex + direction.value[0]]
+
+        cellY = head[1] + distance * shift[0]
+        cellX = head[0] + distance * shift[1]
+
+        if (cellX > self.size - 1) or (cellY > self.size - 1) or (cellX < 0) or (cellY < 0):
+            return enums.gameObjects.OutsideOfBounds
+
+        return self.world[cellY, cellX]
+
+    def scanRel(self, x, y):
+        head = self.getObject(enums.gameObjects.Head)
+        return self.world[head[1] + y, head[0] + x]
 
     def step(self, direction):
         self._step(direction)
