@@ -36,8 +36,8 @@ class Render:
     if rl:
         w += s * 8
 
-    ds = pygame.display.set_mode((w, h))
-    clock = pygame.time.Clock()
+    ds : pygame.display = None
+    clock : pygame.time = None
     logList = []
     maxVal = 0
     stepQ = []
@@ -47,11 +47,16 @@ class Render:
     # ctor ----------
 
     def __init__(self, server, renderMode, callbacks):
-        pygame.init()
+
+        if renderMode == enums.renderModes.PyGame:
+            pygame.init()
+            ds = pygame.display.set_mode((w, h))
+            clock = pygame.time.Clock()
+
         self.server = server
         self.renderMode = renderMode
         self.callbacks = callbacks
-        self.draw = pga.PyGameApi(self)
+        self.draw = pga.PyGameApi(self, renderMode)
 
     # public ------------
 
@@ -60,7 +65,7 @@ class Render:
         if self.server.getGameState().gameState == enums.gameStates.NotStarted:
             self.server.init()
 
-        while self.run:
+        while self.run and self.renderMode != enums.renderModes.Dormant:
             if not self.callbacks.fpsCallback():
                 self.run = False
                 break

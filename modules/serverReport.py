@@ -6,18 +6,19 @@ class ServerReport:
     # properties --------------
 
     games : dict[uuid.UUID, gameReport.GameReport] = {}
-    currentGameId : uuid.UUID = None
-    currentGameReport : gameReport.GameReport = None
+    currentGameId : uuid.UUID
+    name = None
 
     # ctor -----------------
 
     def __init__(self):
-
-        pass
+        self.games = {}
+        self.currentGameId = None
+        self.name = uuid.uuid4()
 
     # public ----------------
 
     def enlistGame(self, gameId : uuid.UUID):
-        self.currentGameReport = gameReport.GameReport()
+        self.games[gameId] = gameReport.GameReport()
         self.currentGameId = gameId
 

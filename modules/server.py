@@ -3,7 +3,6 @@ import math
 import numpy as np
 from modules.internal import gameState as gs
 from modules import enums, serverConfig
-import modules.masterServer as ms
 
 class Server:
 
@@ -13,14 +12,21 @@ class Server:
     score = 0
     size = 8
     config = serverConfig.defaultConfig
-    masterServer : ms.MasterServer = None
+    masterServer = None
     clockFn = None
+    currentMovesLeft = 0
+    sameTurnCommandsInRow = 0
+    lastTurnCommand = None
+    enforceSameTurnCommandsLimit = True
+    sameTurnCommandsInRowLimit = 10
 
     # ctor ----------------------
 
     def __init__(self, config = serverConfig.defaultConfig):
         self.config = config
+        self.masterServer = config.masterServer
         self.init()
+        self.currentMovesLeft = config.limitMovesPerGame
         return;
 
     # public ----------------------
@@ -64,6 +70,10 @@ class Server:
         y = head[1] - neck[1]
         lookDir = [y, x]
         lookupTable = [[0, -1], [-1, 0], [0, 1], [1, 0]]
+
+        if lookDir not in lookupTable:
+            return self.world[0, 0]
+
         lookupTableIndex = lookupTable.index(lookDir)
 
         if lookupTableIndex == 3 and direction == enums.directions.Right:
@@ -84,18 +94,14 @@ class Server:
         return self.world[head[1] + y, head[0] + x]
 
     def step(self, direction):
-
-        if self.masterServer != None:
-            self.masterServer.reportGameEvent(self, enums.gameCommands.ClientMove, {"direction": direction})
-
         self._step(direction)
 
     def getGameState(self):
         return gs.GameState(self);
 
-    def setMasterServer(self, masterServer : ms.MasterServer):
+    def setMasterServer(self, masterServer : object):
         self.masterServer = masterServer
-        masterServer.slaveServers.append(self)
+        masterServer.enlistSlave(self)
 
     def setTickFn(self, function):
         self.clockFn = function
@@ -104,15 +110,18 @@ class Server:
         if self.clockFn == None:
             return False
 
-        if self.config.gamesToPlay < 0:
+        if self.config.gamesToPlay <= 0:
             return False
 
         self.clockFn()
+        return True
+
+    def isGameRunning(self):
+        return self._isGameRunning()
 
     # private ------------------------------
 
     def _newGame(self):
-
         if self.masterServer != None:
             self.masterServer.reportNewGame(self)
 
@@ -126,29 +135,28 @@ class Server:
         self._generateApple()
         return;
 
+    def _endGame(self):
+        if self.masterServer != None:
+            self.masterServer.reportEndGame(self)
+
+        self.sameTurnCommandsInRow = 0
+        self.lastTurnCommand = None
+        self.config.gamesToPlay -= 1
+        self.score = 0
+        self.gameState = enums.gameStates.NotStarted
+        self.currentMovesLeft = self.config.limitMovesPerGame
+
+        if self.config.gamesToPlay > 0:
+            self._newGame()
+
     def _playGameAuto(self):
         ttl = self.config.limitMovesPerGame
         while self._isGameRunning():
             action = self.config.fpsCallback(ttl)
-            ttl -= 1
-
-            if ttl < 0:
-                break
-
-            if action == enums.directions.Skip:
-                continue
-
             self.step(action)
 
-            if self.gameState == enums.gameStates.Finished:
-                if self.masterServer != None:
-                    self.masterServer.reportEndGame(self)
-
-                self.score = 0
-                self.gameState = enums.gameStates.NotStarted
-                self._newGame()
-
-    def _generateApple(self) -> (x, y):
+    def _generateApple(self):
+        from modules import masterServer
         y = random.randint(0, self.size - 1)
         x = random.randint(0, self.size - 1)
         while self.world[y, x] != 0:
@@ -168,7 +176,27 @@ class Server:
     def _setGameState(self, state):
         self.gameState = state;
 
-    def _step(self, action):
+    def _step(self, action : enums.directions):
+
+        if self.enforceSameTurnCommandsLimit:
+            if action == self.lastTurnCommand:
+                self.sameTurnCommandsInRow += 1
+
+            if action == enums.directions.Left or action == enums.directions.Right:
+
+                if self.lastTurnCommand != action:
+                    self.sameTurnCommandsInRow = 0
+
+                self.lastTurnCommand = action
+            else:
+                self.sameTurnCommandsInRow = 0
+
+            if self.sameTurnCommandsInRow > self.sameTurnCommandsInRowLimit:
+                self._endGame()
+
+        if self.masterServer != None:
+            self.masterServer.reportGameEvent(self, enums.gameCommands.ClientMove, {"direction": action})
+
         apple_collected = False
         tail_value = 0
         head = None
@@ -195,7 +223,12 @@ class Server:
         x = head[1] - neck[1]
         look_dir = [y, x]
         look_dirs = [[0, -1], [-1, 0], [0, 1], [1, 0]]
-        look_dir_index = look_dirs.index(look_dir)
+
+        if look_dir not in look_dirs:
+            look_dir_index = 0
+        else:
+            look_dir_index = look_dirs.index(look_dir)
+
         head_movement = None
 
         if action == enums.directions.Left:  # left
@@ -213,7 +246,7 @@ class Server:
 
         if (new_head_x > self.size - 1) or (new_head_y > self.size - 1) or (new_head_x < 0) or (new_head_y < 0) or (
                 self.world[new_head_y][new_head_x] > 1):
-            self._setGameState(enums.gameStates.Finished)
+            return self._endGame()
 
         if self._isGameRunning():
             if self.world[new_head_y][new_head_x] == -1:
@@ -228,6 +261,11 @@ class Server:
             if self.masterServer != None:
                 self.masterServer.reportGameEvent(self, enums.gameCommands.SetProperty, {"property": "score", "op": "inc", "value": 1})
                 self.masterServer.reportGameEvent(self, enums.gameCommands.CallMethod, {"method": "_incTail", "pars": {"x": x, "y": y, "lastTailPiece": lastTailPiece}})
+
+        self.currentMovesLeft -= 1
+
+        if self.currentMovesLeft <= 0:
+            self._endGame()
 
     def _incTail(self, x, y, lastTailPiece):
         self.world[y, x] = lastTailPiece

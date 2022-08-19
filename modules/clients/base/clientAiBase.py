@@ -5,6 +5,7 @@ import modules.enums as enums
 import modules.renderCallback as rndrCb
 import modules.server as srvr
 import modules.render as rndr
+import modules.serverConfig as serverConfig
 from abc import ABC, abstractmethod
 
 class ClientAiBaseConfig:
@@ -13,12 +14,14 @@ class ClientAiBaseConfig:
 
     masterServer = None
     gamesToPlay = 0
+    maxMoves = 1000
 
     # ctor --------------------
 
-    def __init__(self, masterServer = None, gamesToPlay = 0):
+    def __init__(self, masterServer = None, gamesToPlay = 0, maxMoves = 1000):
         self.masterServer = masterServer
         self.gamesToPlay = gamesToPlay
+        self.maxMoves = maxMoves
 
 
 
@@ -42,21 +45,20 @@ class ClientAiBase(ABC, cb.ClientBase):
 
     def __init__(self, config = defaultClientAiBaseConfig):
         self.config = config
-        self.server = srvr.Server()
-        self.server.config.gamesToPlay = config.gamesToPlay
+        self.server = srvr.Server(serverConfig.ServerConfig(masterServer = config.masterServer, gamesToPlay = config.gamesToPlay, limitMovesPerGame = config.maxMoves))
         self.init()
         self.setupLayers()
 
-        if self.enableRender and self.config.masterServer == None:
+        if self.config.masterServer == None:
             renderCallback = rndrCb.RenderCallback(self.frameCallback, self.inputCallback)
             self.render = rndr.Render(self.server, enums.renderModes.PyGame, renderCallback)
-            self.maxFramesIdle = self.render.fps / self.actionsPerSecond
             self.render.render()
-
-        if self.config.masterServer != None:
+            self.maxFramesIdle = self.render.fps / self.actionsPerSecond
+        else:
             self.server.setMasterServer(self.config.masterServer)
             self.server.setTickFn(self.frameCallback)
-
+            renderCallback = rndrCb.RenderCallback(self.frameCallback, self.inputCallback)
+            self.render = rndr.Render(self.server, enums.renderModes.Dormant, renderCallback)
 
     # public ----------------
 
@@ -86,7 +88,7 @@ class ClientAiBase(ABC, cb.ClientBase):
         if self.movementMode == enums.movementModes.Ai:
             self.currentFramesIdle += 1
 
-            if self.currentFramesIdle > self.maxFramesIdle:
+            if self.currentFramesIdle > self.maxFramesIdle and self.server.isGameRunning():
                 self.server.step(self.brain())
                 self.currentFramesIdle = 0
                 self.postBrain()

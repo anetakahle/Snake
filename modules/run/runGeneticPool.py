@@ -6,7 +6,7 @@ n = 100
 master = masterServer.MasterServer()
 
 for i in range(n):
-    agent = clientGenetic.ClientGenetic(cib.ClientAiBaseConfig(master, 100))
+    agent = clientGenetic.ClientGenetic(cib.ClientAiBaseConfig(master, 10))
 
 master.start()
 

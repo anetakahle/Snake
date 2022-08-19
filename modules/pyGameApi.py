@@ -1,4 +1,5 @@
 import pygame
+import modules.enums as enums
 
 class PyGameApi:
     # properties -----------------
@@ -8,10 +9,13 @@ class PyGameApi:
 
     # ctor -------------
 
-    def __init__(self, render):
+    def __init__(self, render, renderMode : enums.renderModes):
         self.render = render
-        self.font = pygame.font.Font(pygame.font.get_default_font(), render.fs)
         self.ds = render.ds
+
+        if renderMode == enums.renderModes.PyGame:
+            self.font = pygame.font.Font(pygame.font.get_default_font(), render.fs)
+
         return
 
     # public ---------------

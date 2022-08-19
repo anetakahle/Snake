@@ -35,7 +35,8 @@ class inputModes(enum.Enum):
     PlayerAuto = 4
 
 class renderModes(enum.Enum):
-    PyGame = 0
+    PyGame = 0,
+    Dormant = 1
 
 class serverModes(enum.Enum):
     Manual = 0

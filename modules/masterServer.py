@@ -1,15 +1,12 @@
-import modules.server as server
-import modules.serverReport as serverReport
-import modules.enums as enums
 import uuid
+from modules import server, serverReport, enums
 
 
 class MasterServer():
 
     # properties ------------------
 
-    slaveServers = []
-    slaveServersDict : dict[server.Server, serverReport.ServerReport] = {}
+    slaveServers : dict[server.Server, serverReport.ServerReport] = {}
     running = False
 
     # ctor --------------
@@ -19,25 +16,29 @@ class MasterServer():
 
     # public -----------------
 
-    def reportNewGame(self, server : server.Server):
+    def enlistSlave(self, server : server.Server) -> bool:
+        if server not in self.slaveServers:
+            sr = serverReport.ServerReport()
+            self.slaveServers[server] = sr
+            return True
+        return False
+
+    def reportNewGame(self, server : server.Server) -> uuid.UUID:
         gameId = self._getNextGameId()
 
-        if server not in self.slaveServersDict:
+        if server not in self.slaveServers:
             sr = serverReport.ServerReport()
-            sr.enlistGame(gameId)
-            self.slaveServersDict[server] = sr
-        else:
-            self.slaveServersDict[server].enlistGame(gameId)
+            self.slaveServers[server] = sr
+
+        self.slaveServers[server].enlistGame(gameId)
+        return gameId
 
     def reportGameEvent(self, server : server.Server, command : enums.gameCommands, data : {}):
-        self.slaveServersDict[server].currentGameReport.addCommand(command, data)
+        self.slaveServers[server].games[self.slaveServers[server].currentGameId].addCommand(command, data)
 
     def reportEndGame(self, server : server.Server):
-        self.slaveServersDict[server].currentGameReport.addCommand(enums.gameCommands.GameEnd, {})
-
-    def enlistSlave(self, server : server.Server):
-        self.slaveServers.append(server)
-        self.slaveServersDict[server] = serverReport.ServerReport()
+        self.slaveServers[server].games[self.slaveServers[server].currentGameId].addCommand(enums.gameCommands.GameEnd, {})
+        self.slaveServers[server].games[self.slaveServers[server].currentGameId].setScore(server.score)
 
     def start(self):
         self.running = True
