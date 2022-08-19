@@ -50,8 +50,8 @@ class Render:
 
         if renderMode == enums.renderModes.PyGame:
             pygame.init()
-            ds = pygame.display.set_mode((w, h))
-            clock = pygame.time.Clock()
+            self.ds = pygame.display.set_mode((self.w, self.h))
+            self.clock = pygame.time.Clock()
 
         self.server = server
         self.renderMode = renderMode

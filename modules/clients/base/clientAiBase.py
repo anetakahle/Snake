@@ -49,11 +49,11 @@ class ClientAiBase(ABC, cb.ClientBase):
         self.init()
         self.setupLayers()
 
-        if self.config.masterServer == None:
+        if self.config.masterServer is None:
             renderCallback = rndrCb.RenderCallback(self.frameCallback, self.inputCallback)
             self.render = rndr.Render(self.server, enums.renderModes.PyGame, renderCallback)
-            self.render.render()
             self.maxFramesIdle = self.render.fps / self.actionsPerSecond
+            self.render.render()
         else:
             self.server.setMasterServer(self.config.masterServer)
             self.server.setTickFn(self.frameCallback)

@@ -27,7 +27,7 @@ class Server:
         self.masterServer = config.masterServer
         self.init()
         self.currentMovesLeft = config.limitMovesPerGame
-        return;
+        return
 
     # public ----------------------
 
@@ -38,7 +38,7 @@ class Server:
                 self.config.gamesToPlay -= 1
                 self.config.newGameCallback(self.config.gamesToPlay)
                 self._playGameAuto()
-        return;
+        return
 
     def getObject(self, object = enums.gameObjects.Head):
         xx = 0
@@ -97,7 +97,7 @@ class Server:
         self._step(direction)
 
     def getGameState(self):
-        return gs.GameState(self);
+        return gs.GameState(self)
 
     def setMasterServer(self, masterServer : object):
         self.masterServer = masterServer
@@ -122,6 +122,12 @@ class Server:
     # private ------------------------------
 
     def _newGame(self):
+        self.score = 0
+        self.gameState = enums.gameStates.NotStarted
+        self.currentMovesLeft = self.config.limitMovesPerGame
+        self.sameTurnCommandsInRow = 0
+        self.lastTurnCommand = None
+
         if self.masterServer != None:
             self.masterServer.reportNewGame(self)
 
@@ -133,20 +139,15 @@ class Server:
         self.world[y][x] = 1  # head
         self.world[y + 1][x] = 2  # body
         self._generateApple()
-        return;
+        return
 
     def _endGame(self):
         if self.masterServer != None:
             self.masterServer.reportEndGame(self)
 
-        self.sameTurnCommandsInRow = 0
-        self.lastTurnCommand = None
         self.config.gamesToPlay -= 1
-        self.score = 0
-        self.gameState = enums.gameStates.NotStarted
-        self.currentMovesLeft = self.config.limitMovesPerGame
 
-        if self.config.gamesToPlay > 0:
+        if self.config.gamesToPlay > 0 or self.masterServer is None:
             self._newGame()
 
     def _playGameAuto(self):

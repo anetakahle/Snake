@@ -1,4 +1,4 @@
-import numpy as  np
+import numpy as np
 from modules import enums
 from modules.clients.base import clientAiBase as caib
 from modules.GeneticAI import Activation_ReLU as relu, Dense_Layer as denl
@@ -9,7 +9,7 @@ class ClientGenetic(caib.ClientAiBase):
 
     # properties ------------
 
-    actionsPerSecond = 2
+    actionsPerSecond = 1
     inputLayerSize = 6
     inputLayer = np.zeros(inputLayerSize)
     server = object
