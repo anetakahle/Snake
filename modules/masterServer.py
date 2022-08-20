@@ -1,5 +1,5 @@
 import uuid
-from modules import server, serverReport, enums
+from modules import server, serverReport, enums, gameReport
 
 
 class MasterServer():
@@ -18,17 +18,14 @@ class MasterServer():
 
     def enlistSlave(self, server : server.Server) -> bool:
         if server not in self.slaveServers:
-            sr = serverReport.ServerReport()
+            sr = serverReport.ServerReport(server)
             self.slaveServers[server] = sr
             return True
         return False
 
     def reportNewGame(self, server : server.Server) -> uuid.UUID:
         gameId = self._getNextGameId()
-
-        if server not in self.slaveServers:
-            sr = serverReport.ServerReport()
-            self.slaveServers[server] = sr
+        self.enlistSlave(server)
 
         self.slaveServers[server].enlistGame(gameId)
         return gameId
@@ -39,6 +36,7 @@ class MasterServer():
     def reportEndGame(self, server : server.Server):
         self.slaveServers[server].games[self.slaveServers[server].currentGameId].addCommand(enums.gameCommands.GameEnd, {})
         self.slaveServers[server].games[self.slaveServers[server].currentGameId].setScore(server.score)
+        self.slaveServers[server].games[self.slaveServers[server].currentGameId].setMovesCount(server.movesCount)
 
     def start(self):
         self.running = True
@@ -56,7 +54,16 @@ class MasterServer():
 
         return anyServerAccepted
 
+    def orderByScore(self) -> list[gameReport.GameReport]:
+        allGames = []
+        for server in self.slaveServers.values():
+            gamesList = list(server.games.values())
+            allGames.extend(gamesList)
+
+        return sorted(allGames, key=lambda x: x.score, reverse=True)
+
     # private -------------------
 
     def _getNextGameId(self) -> uuid.UUID:
         return uuid.uuid4()
+

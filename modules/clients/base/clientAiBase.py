@@ -45,7 +45,7 @@ class ClientAiBase(ABC, cb.ClientBase):
 
     def __init__(self, config = defaultClientAiBaseConfig):
         self.config = config
-        self.server = srvr.Server(serverConfig.ServerConfig(masterServer = config.masterServer, gamesToPlay = config.gamesToPlay, limitMovesPerGame = config.maxMoves))
+        self.server = srvr.Server(self, serverConfig.ServerConfig(masterServer = config.masterServer, gamesToPlay = config.gamesToPlay, limitMovesPerGame = config.maxMoves))
         self.init()
         self.setupLayers()
 

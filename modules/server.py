@@ -3,6 +3,7 @@ import math
 import numpy as np
 from modules.internal import gameState as gs
 from modules import enums, serverConfig
+from modules.clients.base import clientBase
 
 class Server:
 
@@ -19,14 +20,16 @@ class Server:
     lastTurnCommand = None
     enforceSameTurnCommandsLimit = True
     sameTurnCommandsInRowLimit = 10
+    client : clientBase.ClientBase = None
 
     # ctor ----------------------
 
-    def __init__(self, config = serverConfig.defaultConfig):
+    def __init__(self, client : clientBase.ClientBase, config = serverConfig.defaultConfig):
         self.config = config
         self.masterServer = config.masterServer
         self.init()
         self.currentMovesLeft = config.limitMovesPerGame
+        self.client = client
         return
 
     # public ----------------------
@@ -63,7 +66,74 @@ class Server:
 
         return x == enums.getInt(object)
 
-    def scanDir(self, direction = enums.directions.Forward, distance = 1):
+    def scanDir8(self, direction = enums.directions8.Forward, distance = 1): # depends on head look direction
+        head = self.getObject(enums.gameObjects.Head)
+        neck = self.getObject(enums.gameObjects.Neck)
+        x = head[0] - neck[0]
+        y = head[1] - neck[1]
+        lookDir = [y, x]
+        lookupTable = [[0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1]]
+        if lookDir not in lookupTable:
+            return self.world[0, 0]
+        lookupTableIndex = lookupTable.index(lookDir)
+
+        if direction == enums.directions8.BackRight:
+            x = 0
+
+        directions = [None, None]
+        shift1 = None
+        shift2 = None
+        if (enums.getInt(direction.value) % 2) == 0:
+            shift2 = [0, 0]
+            directions[0] = enums.getInt(direction.value)
+        else:
+            directions[0] = enums.getInt(direction.value) - 1
+            if enums.getInt(direction.value) != 7:
+                directions[1] = enums.getInt(direction.value) + 1
+            else:
+                directions[1] = 0
+        # now we can just move as we are used to - left, forw, righ, back
+        while any(x is None for x in [shift1, shift2]):
+            if shift1 is None:
+                direction = enums.directions8(directions[0])
+            else:
+                direction = enums.directions8(directions[1])
+            # now we can work with just one direction at time
+
+            if not(lookupTableIndex == 6 and (direction == enums.directions8.Back or direction == enums.directions8.Right)):
+                if not (lookupTableIndex == 4 and direction == enums.directions8.Back):
+                    index = lookupTableIndex + 2 * ((enums.getInt(direction)//2)-1)
+                    if shift1 is None:
+                        shift1 = lookupTable[index]
+                    else:
+                        shift2 = lookupTable[index]
+                else: # ld = 4, dir = 6
+                    if shift1 is None:
+                        shift1 = [0, -1]
+                    else:
+                        shift2 = [0, -1]
+            else: # == 6
+                if direction == enums.directions8.Back:
+                    if shift1 is None:
+                        shift1 = [-1, 0]
+                    else:
+                        shift2 = [-1, 0]
+                if direction == enums.directions8.Right:
+                    if shift1 is None:
+                        shift1 = [0, -1]
+                    else:
+                        shift2 = [0, -1]
+
+        cellY = head[1] + (distance * shift1[0]) + (distance * shift2[0])
+        cellX = head[0] + (distance * shift1[1]) + (distance * shift2[1])
+
+
+        if (cellX > self.size - 1) or (cellY > self.size - 1) or (cellX < 0) or (cellY < 0):
+            return enums.gameObjects.OutsideOfBounds
+
+        return self.world[cellY, cellX]
+
+    def scanDir(self, direction = enums.directions.Forward, distance = 1): # depends on head look direction
         head = self.getObject(enums.gameObjects.Head)
         neck = self.getObject(enums.gameObjects.Neck)
         x = head[0] - neck[0]
@@ -79,7 +149,7 @@ class Server:
         if lookupTableIndex == 3 and direction == enums.directions.Right:
             shift = lookupTable[0]
         else:
-            shift = lookupTable[lookupTableIndex + direction.value[0]]
+            shift = lookupTable[lookupTableIndex + enums.getInt(direction)]
 
         cellY = head[1] + distance * shift[0]
         cellX = head[0] + distance * shift[1]
@@ -89,7 +159,7 @@ class Server:
 
         return self.world[cellY, cellX]
 
-    def scanRel(self, x, y):
+    def scanRel(self, x, y): #only depends on the head position
         head = self.getObject(enums.gameObjects.Head)
         return self.world[head[1] + y, head[0] + x]
 
@@ -123,6 +193,7 @@ class Server:
 
     def _newGame(self):
         self.score = 0
+        self.movesCount = 0
         self.gameState = enums.gameStates.NotStarted
         self.currentMovesLeft = self.config.limitMovesPerGame
         self.sameTurnCommandsInRow = 0
@@ -178,6 +249,7 @@ class Server:
         self.gameState = state;
 
     def _step(self, action : enums.directions):
+        self.movesCount += 1
 
         if self.enforceSameTurnCommandsLimit:
             if action == self.lastTurnCommand:

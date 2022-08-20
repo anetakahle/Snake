@@ -4,15 +4,44 @@ import numpy
 def getInt(enumEntry):
     if isinstance(enumEntry, numpy.int64):
         return int(enumEntry)
+    if isinstance(enumEntry , int):
+        return enumEntry
     if isinstance(enumEntry.value , int):
         return int(enumEntry.value)
     return int(enumEntry.value[0])
 
 class directions(enum.Enum):
-    Left = -1,
-    Forward = 0,
-    Right = 1,
+    Left = -1
+    Forward = 0
+    Right = 1
     Skip = 2
+
+class directions8(enum.Enum):
+    Left = 0
+    ForwardLeft = 1
+    Forward = 2
+    ForwardRight = 3
+    Right = 4
+    BackRight = 5
+    Back = 6
+    BackLeft = 7
+
+    def __str__(self):
+        if self.value == 0:
+            return "L"
+        elif self.value == 1:
+            return "FL"
+        elif self.value == 2:
+            return "F"
+        elif self.value == 3:
+            return "FR"
+        elif self.value == 4:
+            return "R"
+        elif self.value == 5:
+            return "BR"
+        elif self.value == 6:
+            return "B"
+        return "BL"
 
 class logTypes(enum.Enum):
     Info = 0

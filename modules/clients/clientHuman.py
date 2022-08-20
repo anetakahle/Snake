@@ -15,7 +15,7 @@ class ClientHuman(cb.ClientBase):
 
     def init(self):
         renderCallback = rndrCb.RenderCallback(self.frameCallback, self.inputCallback)
-        self.server = srvr.Server()
+        self.server = srvr.Server(self)
         self.render = rndr.Render(self.server, enums.renderModes.PyGame, renderCallback)
         self.render.render()
 

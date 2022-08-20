@@ -12,7 +12,7 @@ class SnakeView1():
         self.client = client
 
     # public ------------
-    def getView1(self, distance = 1):
+    def getViewDist1(self, distance = 1):
         L = self.client.server.scanDir(enums.directions.Left, distance)
         F = self.client.server.scanDir(enums.directions.Forward, distance)
         R = self.client.server.scanDir(enums.directions.Right, distance)
