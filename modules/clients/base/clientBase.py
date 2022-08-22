@@ -1,4 +1,12 @@
-class ClientBase:
+import modules.db.iSerializable as iSerializable
+import modules.db.dbcontext as db
+
+class ClientBase(iSerializable.ISerializable):
+
+    # properties ---------------
+
+    dbId : int = 0
+    runtimeId : str = ''
 
     # ctor --------------
 
@@ -7,5 +15,8 @@ class ClientBase:
 
     # public ----------------
 
-    def advance(self):
-        pass
+    def serialize(self) -> int:
+        return db.insertGetId(f"""
+            insert into ClientGenerationAgents (runtimeId, clientGenerationId) 
+            values ('{self.runtimeId}', null)
+        """)[0]

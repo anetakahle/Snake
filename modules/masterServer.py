@@ -1,12 +1,13 @@
 import uuid
-from modules import server, serverReport, enums, gameReport
+from modules import server, serverReporter, enums, gameReporter
+import modules.db.dbcontext as db
+import modules.db.iSerializable as iSerializable
 
-
-class MasterServer():
+class MasterServer(iSerializable.ISerializable):
 
     # properties ------------------
 
-    slaveServers : dict[server.Server, serverReport.ServerReport] = {}
+    slaveServers : dict[server.Server, serverReporter.ServerReporter] = {}
     running = False
 
     # ctor --------------
@@ -18,7 +19,7 @@ class MasterServer():
 
     def enlistSlave(self, server : server.Server) -> bool:
         if server not in self.slaveServers:
-            sr = serverReport.ServerReport(server)
+            sr = serverReporter.ServerReporter(server)
             self.slaveServers[server] = sr
             return True
         return False
@@ -54,16 +55,31 @@ class MasterServer():
 
         return anyServerAccepted
 
-    def orderByScore(self) -> list[gameReport.GameReport]:
+    def getAllGames(self): #returns a list of games
         allGames = []
-        for server in self.slaveServers.values():
+        for server in self.slaveServers.values(): #server reporters
             gamesList = list(server.games.values())
             allGames.extend(gamesList)
 
-        return sorted(allGames, key=lambda x: x.score, reverse=True)
+        return allGames
+
+    def orderGamesByScore(self, desc : bool = True) -> list[gameReporter.GameReporter] :
+        return sorted(self.getAllGames(), key=lambda x: x.score, reverse=desc)
+
+    def serialize(self): # vsechny game reporteri napisou do tabulky vysledky
+
+        for game in self.getAllGames():
+            game.serialize()
+
+    def orderServersByScore(self, desc : bool = True) -> list[serverReporter.ServerReporter] :
+        for slave in self.slaveServers.values():
+            slave.getGamesScoreAvg()
+        return sorted(self.slaveServers.values(), key=lambda x: x.gamesAvgScore, reverse=desc)
+
 
     # private -------------------
 
     def _getNextGameId(self) -> uuid.UUID:
         return uuid.uuid4()
+
 

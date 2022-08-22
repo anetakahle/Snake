@@ -7,25 +7,8 @@ import modules.server as srvr
 import modules.render as rndr
 import modules.serverConfig as serverConfig
 from abc import ABC, abstractmethod
-
-class ClientAiBaseConfig:
-
-    # properties ----------------
-
-    masterServer = None
-    gamesToPlay = 0
-    maxMoves = 1000
-
-    # ctor --------------------
-
-    def __init__(self, masterServer = None, gamesToPlay = 0, maxMoves = 1000):
-        self.masterServer = masterServer
-        self.gamesToPlay = gamesToPlay
-        self.maxMoves = maxMoves
-
-
-
-defaultClientAiBaseConfig = ClientAiBaseConfig()
+import modules.clients.base.clientAiBaseConfig as clientAiBaseConfig
+import modules.db.dbcontext as db
 
 class ClientAiBase(ABC, cb.ClientBase):
 
@@ -38,13 +21,17 @@ class ClientAiBase(ABC, cb.ClientBase):
     maxFramesIdle = 0
     currentFramesIdle = 0
     movementMode = enums.movementModes.Ai
-    config : ClientAiBaseConfig = None
+    config : clientAiBaseConfig.ClientAiBaseConfig = None
     tickFn = None
+    genId : int = 0
+    agentId : int = 0
+    genIndex : int = 0
 
     # ctor --------------
 
-    def __init__(self, config = defaultClientAiBaseConfig):
+    def __init__(self, config = clientAiBaseConfig.defaultClientAiBaseConfig):
         self.config = config
+        self.genIndex = config.agentIndex
         self.server = srvr.Server(self, serverConfig.ServerConfig(masterServer = config.masterServer, gamesToPlay = config.gamesToPlay, limitMovesPerGame = config.maxMoves))
         self.init()
         self.setupLayers()
@@ -55,6 +42,11 @@ class ClientAiBase(ABC, cb.ClientBase):
             self.maxFramesIdle = self.render.fps / self.actionsPerSecond
             self.render.render()
         else:
+            self.genId = db.insertGetId(f"""
+                insert into ClientGenerations (clientId, "index") 
+                values ({self.dbId}, {self.genIndex})
+            """)[0]
+
             self.server.setMasterServer(self.config.masterServer)
             self.server.setTickFn(self.frameCallback)
             renderCallback = rndrCb.RenderCallback(self.frameCallback, self.inputCallback)
@@ -63,7 +55,7 @@ class ClientAiBase(ABC, cb.ClientBase):
     # public ----------------
 
     @abstractmethod
-    def setupLayers(self):
+    def setupLayers(self): #also refers to the new generation layer setup
         pass
 
     @abstractmethod
@@ -115,3 +107,9 @@ class ClientAiBase(ABC, cb.ClientBase):
 
         if event.key == pygame.K_q:
             self.setupLayers()
+
+    def serialize(self) -> int:
+        return db.insertGetId(f"""
+            insert into ClientGenerationAgents (runtimeId, clientGenerationId) 
+            values ('{self.runtimeId}', {self.genId})
+        """)[0]

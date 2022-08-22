@@ -4,6 +4,7 @@ import numpy as np
 from modules.internal import gameState as gs
 from modules import enums, serverConfig
 from modules.clients.base import clientBase
+import modules.utils.datetime2 as datetime2
 
 class Server:
 
@@ -21,15 +22,17 @@ class Server:
     enforceSameTurnCommandsLimit = True
     sameTurnCommandsInRowLimit = 10
     client : clientBase.ClientBase = None
+    startTimeSql : str = ''
 
     # ctor ----------------------
 
     def __init__(self, client : clientBase.ClientBase, config = serverConfig.defaultConfig):
+        self.client = client
         self.config = config
         self.masterServer = config.masterServer
         self.init()
         self.currentMovesLeft = config.limitMovesPerGame
-        self.client = client
+        self.startTimeSql = datetime2.sqlNow()
         return
 
     # public ----------------------

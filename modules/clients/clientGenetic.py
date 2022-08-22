@@ -1,36 +1,42 @@
+import random
 import numpy as np
 from modules import enums, server
 from modules.clients.base import clientAiBase as caib
 from modules.GeneticAI import Activation_ReLU as relu, Dense_Layer as denl
-from modules.snakeViews import snakeViewRel3DirDist1 as sw1
+from modules.snakeViews import snakeViewR8DEndNearest as sw8n
+import sqlite3
 
 
 class ClientGenetic(caib.ClientAiBase):
 
     # properties ------------
 
-    actionsPerSecond = 0.1
-    inputLayerSize = 6
+    actionsPerSecond = 1
+    inputLayerSize = 16
     inputLayer = np.zeros(inputLayerSize)
     server : server = None
-    sw1 = object
+    sw8n = object
     lastValues = [[0, 0 ,0]]
     hiddenLayers = []
+    dbId = 1
 
     # ctor -----------
 
     def setupLayers(self):
+
         self.hiddenLayers = []
         self.hiddenLayers.append(denl.Layer_Dense(len(self.inputLayer), self.inputLayerSize, enums.weightModes.Random, enums.biasModes.Random))
         self.hiddenLayers.append(denl.Layer_Dense(self.inputLayerSize, self.inputLayerSize))
         self.hiddenLayers.append(denl.Layer_Dense(self.inputLayerSize, 3))
 
     def init(self):
-        self.sw1 = sw1.SnakeView1(self)
+        self.sw8n = sw8n.SnakeViewR8DEndNearest(self)
+        self.config.dbId = 1
 
     # public ------------
 
     def onFrame(self):
+
         self.render.log("Vaha doleva: " + str(self.lastValues[0][0]), enums.logTypes.Ok)
         self.render.log("Vaha Rovne: " + str(self.lastValues[0][1]), enums.logTypes.Ok)
         self.render.log("Vaha doprava: " + str(self.lastValues[0][2]), enums.logTypes.Ok)
@@ -67,14 +73,26 @@ class ClientGenetic(caib.ClientAiBase):
         output = self.computeLayers()
         self.lastValues = output
 
+
     def brain(self):
 
         # INPUT
         output = self.computeLayers()
 
         # ACTION SELECTION
+        output = output[0]
+        maxValIdx = np.argmax(output)
+        ActionsToSelect = []
+        epsilon = 0.001
 
-        actionIndex = np.argmax(output[0])
+        # pro ty idx, ktere se nerovnaji maxvalidx, vyber ty, co se lisi nanejvys o E
+        for i in range(3):
+            if output[maxValIdx] - output[i] <= epsilon:
+                ActionsToSelect.append(i)
+
+        actionIndex = random.choice(ActionsToSelect)
+
+
         if actionIndex == 0:
             return enums.directions.Left
         elif actionIndex == 1:
@@ -90,7 +108,7 @@ class ClientGenetic(caib.ClientAiBase):
         secondaryView = []
         secondaryViewApples = []
         secondaryViewObstacles = []
-        for obj in self.sw1.getViewDist1(distance):
+        for obj in self.sw8n.getViewR8DEndNearest():
             if obj == enums.getInt(enums.gameObjects.Apple):
                 secondaryViewApples.append(1)
             else:
