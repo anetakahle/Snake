@@ -4,22 +4,23 @@ from modules import enums, server
 from modules.clients.base import clientAiBase as caib
 from modules.GeneticAI import Activation_ReLU as relu, Dense_Layer as denl
 from modules.snakeViews import snakeViewR8DEndNearest as sw8n
+from modules import masterServer as masterServer
 import sqlite3
 import modules.serverReporter as serverReporter
 
-
-class ClientGenetic(caib.ClientAiBase):
+class ClientGenetic2(caib.ClientAiBase):
 
     # properties ------------
 
     actionsPerSecond = 1
-    inputLayerSize = 16
+    inputLayerSize = 8 #num of neurons
     inputLayer = np.zeros(inputLayerSize)
     server : server = None
     sw8n = object
     lastValues = [[0, 0 ,0]]
     hiddenLayers = []
     dbId = 1
+    input = []
 
     # public ------------
 
@@ -39,9 +40,13 @@ class ClientGenetic(caib.ClientAiBase):
 
     def setupLayers(self):
         self.hiddenLayers = []
-        self.hiddenLayers.append(denl.Layer_Dense(len(self.inputLayer), self.inputLayerSize, enums.weightModes.Random, enums.biasModes.Random))
-        self.hiddenLayers.append(denl.Layer_Dense(self.inputLayerSize, self.inputLayerSize))
+        self.input = self.createInput()
+
+        self.hiddenLayers.append(denl.Layer_Dense(len(self.input), self.inputLayerSize, enums.weightModes.Random, enums.biasModes.Random))
         self.hiddenLayers.append(denl.Layer_Dense(self.inputLayerSize, 3))
+        x = len(self.inputLayer)
+        y = 0
+
 
     def init(self):
         self.sw8n = sw8n.SnakeViewR8DEndNearest(self)
@@ -58,26 +63,22 @@ class ClientGenetic(caib.ClientAiBase):
             self.render.log("Scan 8 (" + str(enums.directions8(i)) + "): " + str(scanResult), enums.logTypes.Ok)
 
     def computeLayers(self):
-        self.inputLayer = self.createInputLayer()
 
-        # LAYER 1
+
+
+        # INPUT LAYER
         dense1 = self.hiddenLayers[0]
-        activation1 = relu.Activation_ReLU()
-        dense1.forward(self.inputLayer)
-        activation1.forward(dense1.output)
-
-        # LAYER 2
-        dense2 = self.hiddenLayers[1]
-        activation2 = relu.Activation_ReLU()
-        dense2.forward(activation1.output)
-        activation2.forward(dense2.output)
+        # activation1 = relu.Activation_ReLU()
+        dense1.forward(self.input)
+        # activation1.forward(dense1.output)
 
         # OUTPUT LAYER
-        layerOut = self.hiddenLayers[2]
-        activationLayerOut = relu.Activation_ReLU()
-        layerOut.forward(activation2.output)
-        activationLayerOut.forward(layerOut.output)
-        output = activationLayerOut.output
+        layerOut = self.hiddenLayers[1]
+        #activationLayerOut = relu.Activation_ReLU()
+        layerOut.forward(dense1.output)
+        #activationLayerOut.forward(layerOut.output)
+        #output = activationLayerOut.output
+        output = layerOut.output
 
         return output
 
@@ -94,16 +95,16 @@ class ClientGenetic(caib.ClientAiBase):
         # ACTION SELECTION
         output = output[0]
         maxValIdx = np.argmax(output)
-        ActionsToSelect = []
-        epsilon = 0.001
+        #ActionsToSelect = []
+        #epsilon = 0.001
 
         # pro ty idx, ktere se nerovnaji maxvalidx, vyber ty, co se lisi nanejvys o E
-        for i in range(3):
-            if output[maxValIdx] - output[i] <= epsilon:
-                ActionsToSelect.append(i)
+        #for i in range(3):
+        #    if output[maxValIdx] - output[i] <= epsilon:
+        #        ActionsToSelect.append(i)
 
-        actionIndex = random.choice(ActionsToSelect)
-
+        #actionIndex = random.choice(ActionsToSelect)
+        actionIndex = maxValIdx
 
         if actionIndex == 0:
             return enums.directions.Left
@@ -116,18 +117,18 @@ class ClientGenetic(caib.ClientAiBase):
 
     # private ------------
 
-    def createInputLayer(self): #translating a snake view into the input for the NN
+    def createInput(self): #translating a snake view into the input for the NN
         secondaryView = []
         secondaryViewApples = []
         secondaryViewObstacles = []
         for obj, dis in self.sw8n.getViewR8DEndNearest():
             if obj == enums.getInt(enums.gameObjects.Apple):
-                secondaryViewApples.append(1)
+                secondaryViewApples.append(1/dis)
             else:
                 secondaryViewApples.append(0)
 
             if obj == enums.getInt(enums.gameObjects.Body) or obj == enums.getInt(enums.gameObjects.OutsideOfBounds):
-                secondaryViewObstacles.append(1)
+                secondaryViewObstacles.append(1/dis)
             else:
                 secondaryViewObstacles.append(0)
         secondaryView += secondaryViewApples

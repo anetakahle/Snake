@@ -2,6 +2,7 @@ import uuid
 from modules import server, serverReporter, enums, gameReporter
 import modules.db.dbcontext as db
 import modules.db.iSerializable as iSerializable
+import modules.clients.base.clientAiBase as clientAiBase
 
 class MasterServer(iSerializable.ISerializable):
 
@@ -9,10 +10,14 @@ class MasterServer(iSerializable.ISerializable):
 
     slaveServers : dict[server.Server, serverReporter.ServerReporter] = {}
     running = False
+    stashedServerReporters : dict[int, list[serverReporter.ServerReporter]] = {}
 
     # ctor --------------
 
     def __init__(self):
+        self.slaveServers = {}
+        self.running = False
+        self.stashedServerReporters = {}
         pass
 
     # public -----------------
@@ -67,14 +72,23 @@ class MasterServer(iSerializable.ISerializable):
         return sorted(self.getAllGames(), key=lambda x: x.score, reverse=desc)
 
     def serialize(self): # vsechny game reporteri napisou do tabulky vysledky
-
         for game in self.getAllGames():
             game.serialize()
 
-    def orderServersByScore(self, desc : bool = True) -> list[serverReporter.ServerReporter] :
+    def orderServerReportersByScore(self, desc : bool = True) -> list[serverReporter.ServerReporter] :
         for slave in self.slaveServers.values():
             slave.getGamesScoreAvg()
         return sorted(self.slaveServers.values(), key=lambda x: x.gamesAvgScore, reverse=desc)
+
+    def stashGeneration(self, genIndex : int):
+        self.stashedServerReporters[genIndex] = self.orderServerReportersByScore()
+        self.slaveServers = {}
+
+    def getStashedGeneration(self, genIndex : int) -> list[serverReporter.ServerReporter] :
+        return self.stashedServerReporters[genIndex]
+
+    def isGenerationStashed(self, genIndex : int) -> bool :
+        return genIndex in self.stashedServerReporters
 
 
     # private -------------------

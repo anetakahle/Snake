@@ -9,6 +9,7 @@ import modules.serverConfig as serverConfig
 from abc import ABC, abstractmethod
 import modules.clients.base.clientAiBaseConfig as clientAiBaseConfig
 import modules.db.dbcontext as db
+import modules.serverReporter as serverReporter
 
 class ClientAiBase(ABC, cb.ClientBase):
 
@@ -26,6 +27,7 @@ class ClientAiBase(ABC, cb.ClientBase):
     genId : int = 0
     agentId : int = 0
     genIndex : int = 0
+    hiddenLayers = []
 
     # ctor --------------
 
@@ -48,6 +50,10 @@ class ClientAiBase(ABC, cb.ClientBase):
             """)[0]
 
             self.server.setMasterServer(self.config.masterServer)
+
+            if self.config.masterServer.isGenerationStashed(self.genIndex - 1):
+                self.mixLayers(self.config.masterServer.getStashedGeneration(self.genIndex - 1), self.config.agentIndex, self.config.agentsCount)
+
             self.server.setTickFn(self.frameCallback)
             renderCallback = rndrCb.RenderCallback(self.frameCallback, self.inputCallback)
             self.render = rndr.Render(self.server, enums.renderModes.Dormant, renderCallback)
@@ -55,7 +61,11 @@ class ClientAiBase(ABC, cb.ClientBase):
     # public ----------------
 
     @abstractmethod
-    def setupLayers(self): #also refers to the new generation layer setup
+    def mixLayers(self, prevGen : list[serverReporter.ServerReporter], clientIndex : int, clientsCount : int):
+        pass
+
+    @abstractmethod
+    def setupLayers(self):
         pass
 
     @abstractmethod

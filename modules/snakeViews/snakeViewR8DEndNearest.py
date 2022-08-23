@@ -26,7 +26,7 @@ class SnakeViewR8DEndNearest():
                 if ii is None:
                     jj = self.client.server.scanDir8(enums.directions8(idx), distance)
                     if jj != enums.gameObjects.Void:
-                        ll[idx] = jj
+                        ll[idx] = (jj, distance)
             distance += 1
 
         return ll
