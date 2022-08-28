@@ -1,5 +1,8 @@
+from __future__ import annotations
 import modules.enums as enums
-import modules.instinctAi.node as node
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import modules.instinctAi.node as node
 
 class Connection:
 
