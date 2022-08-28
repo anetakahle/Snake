@@ -1,21 +1,24 @@
-from modules.clients import clientGenetic
 import modules.masterServer as masterServer
-import modules.clients.base.clientAiBase as cib
 import modules.clients.base.clientAiBaseConfig as cibCfg
-import modules.db.dbcontext as db
 import modules.clients.clientGenetic1Layer as clientGenetic1Layer
-import modules.clients.clientRandom as clientRandom
 import modules.utils.iterable as iterable
+import modules.clients.clientInstinct as clientInstinct
+import modules.instinctAi.instinct as instinct
 
-generations = 50
-agents = 10
+generations = 1
+agents = 1
 master = masterServer.MasterServer()
+
+instinctInst = instinct.Instinct(16, 3, agents, 20, 0.5, 3)
+agentIndex = 0
 
 for gen in range(generations):
 
-    # zapiseme info do dict, key = genindex, val = server.reporter/gameReporteret ... mnozina agentu, kteri hrali se stejnymi vahami
+    agentIndex = 0
+
     for agent in range(agents):
-        agent = clientGenetic1Layer.ClientGenetic2(cibCfg.ClientAiBaseConfig(master, 2, agentIndex=agent, genIndex=gen, agentsCount = agents))
+        clientInstinct.ClientInstinct(instinctInst, instinctInst.population[agentIndex], cibCfg.ClientAiBaseConfig(master, 1, agentIndex=agent, genIndex=gen, agentsCount = agents))
+        agentIndex += 1
 
     master.start()
     master.serialize()
@@ -23,7 +26,7 @@ for gen in range(generations):
     print("top prumer fitness: " + str(master.orderServerReportersByFitness()[0].gamesAvgFitness))
     print("top prumer skore: " + str(master.orderServerReportersByScore()[0].gamesAvgScore))
 
-    master.stashGeneration(gen) #vyprazdneni
+    master.stashGeneration(gen)
 
 topScore = max([x.gamesMaxScore for x in [item for sublist in master.stashedServerReporters.values() for item in sublist]])
 

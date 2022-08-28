@@ -18,11 +18,14 @@ class Server:
     clockFn = None
     currentMovesLeft = 0
     sameTurnCommandsInRow = 0
+    moveCountBeforeEatingApple = 0
     lastTurnCommand = None
     enforceSameTurnCommandsLimit = True
     sameTurnCommandsInRowLimit = 10
+    moveCountBeforeEatingAppleLimit = 50
     client : clientBase.ClientBase = None
     startTimeSql : str = ''
+    gameEndReason : enums.gameEndReasons = None
 
     # ctor ----------------------
 
@@ -192,6 +195,18 @@ class Server:
     def isGameRunning(self):
         return self._isGameRunning()
 
+    def distanceBetweenManhattan(self, a : enums.gameObjects, b : enums.gameObjects, normalized : bool = True):
+        aObj = self.getObject(a)
+        bObj = self.getObject(b)
+        dis = abs(aObj[0] - bObj[0]) + abs(aObj[1] - bObj[1])
+
+        if not normalized:
+            return dis
+
+        maxDis = self.size * 2
+        return dis / maxDis
+
+
     # private ------------------------------
 
     def _newGame(self):
@@ -200,6 +215,7 @@ class Server:
         self.gameState = enums.gameStates.NotStarted
         self.currentMovesLeft = self.config.limitMovesPerGame
         self.sameTurnCommandsInRow = 0
+        self.moveCountBeforeEatingApple = 0
         self.lastTurnCommand = None
 
         if self.masterServer != None:
@@ -215,7 +231,9 @@ class Server:
         self._generateApple()
         return
 
-    def _endGame(self):
+    def _endGame(self, reason : enums.gameEndReasons):
+        self.gameEndReason = reason
+
         if self.masterServer != None:
             self.masterServer.reportEndGame(self)
 
@@ -253,6 +271,7 @@ class Server:
 
     def _step(self, action : enums.directions):
         self.movesCount += 1
+        self.moveCountBeforeEatingApple += 1
 
         if self.enforceSameTurnCommandsLimit:
             if action == self.lastTurnCommand:
@@ -268,7 +287,10 @@ class Server:
                 self.sameTurnCommandsInRow = 0
 
             if self.sameTurnCommandsInRow > self.sameTurnCommandsInRowLimit:
-                self._endGame()
+                self._endGame(enums.gameEndReasons.TurnStrikeLimitExceeded)
+
+        if self.moveCountBeforeEatingApple > self.moveCountBeforeEatingAppleLimit:
+            self._endGame(enums.gameEndReasons.AppleNotCollectedInLimit)
 
         if self.masterServer != None:
             self.masterServer.reportGameEvent(self, enums.gameCommands.ClientMove, {"direction": action})
@@ -320,9 +342,11 @@ class Server:
         new_head_y = head[0] + head_movement[0]
         new_head_x = head[1] + head_movement[1]
 
-        if (new_head_x > self.size - 1) or (new_head_y > self.size - 1) or (new_head_x < 0) or (new_head_y < 0) or (
-                self.world[new_head_y][new_head_x] > 1):
-            return self._endGame()
+        if (new_head_x > self.size - 1) or (new_head_y > self.size - 1) or (new_head_x < 0) or (new_head_y < 0):
+            return self._endGame(enums.gameEndReasons.OutOfBounds)
+
+        if self.world[new_head_y][new_head_x] > 1:
+            return self._endGame(enums.gameEndReasons.SelfCollision)
 
         if self._isGameRunning():
             if self.world[new_head_y][new_head_x] == -1:
@@ -333,6 +357,7 @@ class Server:
         if apple_collected is True:
             self._generateApple()
             self.score += 1
+            self.moveCountBeforeEatingApple = 0
 
             if self.masterServer != None:
                 self.masterServer.reportGameEvent(self, enums.gameCommands.SetProperty, {"property": "score", "op": "inc", "value": 1})
@@ -341,7 +366,7 @@ class Server:
         self.currentMovesLeft -= 1
 
         if self.currentMovesLeft <= 0:
-            self._endGame()
+            self._endGame(enums.gameEndReasons.MovesLimitExceeded)
 
     def _incTail(self, x, y, lastTailPiece):
         self.world[y, x] = lastTailPiece

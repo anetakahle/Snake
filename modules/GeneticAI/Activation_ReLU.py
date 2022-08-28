@@ -1,3 +1,4 @@
+
 import modules.enums as enums
 import numpy as np
 
@@ -7,3 +8,6 @@ class Activation_ReLU:
      def forward(self, inputs):
          # Calculate output values from input
          self.output = np.maximum(0, inputs)
+
+
+

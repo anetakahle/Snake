@@ -13,12 +13,13 @@ class Layer_Dense:
         elif weightsMode == enums.weightModes.One:
             self.weights = np.ones((n_inputs, n_neurons))
         if biasMode == enums.biasModes.Random:
-            self.biases = 0.10 * np.random.randn(1, n_neurons)
+            self.biases = (0.10 * np.random.randn(1, n_neurons))[0]
         elif biasMode == enums.biasModes.Zero:
-            self.biases = np.zeros((1, n_neurons))
+            self.biases = (np.zeros((1, n_neurons)))[0]
         elif biasMode == enums.biasModes.One:
-            self.biases = np.ones((1, n_neurons))
+            self.biases = (np.ones((1, n_neurons)))[0]
     # Forward pass
     def forward(self, inputs):
     # Calculate output values from inputs, weights and biases
-        self.output = np.dot(inputs, self.weights) + self.biases
+        temp = np.dot(inputs, self.weights)
+        self.output = temp + self.biases

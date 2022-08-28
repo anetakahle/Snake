@@ -15,6 +15,7 @@ class GameReporter(iSerializable.ISerializable):
     server : serverCls.Server = None
     agentId : int = 0
     clientId : int = 0
+    fitness : int = 0
 
     # ctor ------------
 
@@ -24,11 +25,15 @@ class GameReporter(iSerializable.ISerializable):
         self.movesCount = 0
         self.server = server
         self.clientId = server.client.dbId
+        self.fitness = 0
 
     # public ----------------
 
     def addCommand(self, command : enums.gameCommands, data : {}):
         self.commands.append(gameCommand.GameCommand(command, data))
+
+    def setFitness(self, fitness : int):
+        self.fitness = fitness
 
     def setScore(self, score : int):
         self.score = score

@@ -61,6 +61,10 @@ class ClientAiBase(ABC, cb.ClientBase):
     # public ----------------
 
     @abstractmethod
+    def getFitness(self) -> int :
+        pass
+
+    @abstractmethod
     def mixLayers(self, prevGen : list[serverReporter.ServerReporter], clientIndex : int, clientsCount : int):
         pass
 

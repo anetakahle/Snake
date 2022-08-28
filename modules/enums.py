@@ -1,5 +1,6 @@
 import enum
 import numpy
+import math as math
 
 def getInt(enumEntry):
     if isinstance(enumEntry, numpy.int64):
@@ -112,5 +113,101 @@ class gameCommands(enum.Enum):
     ClientMove = 1
     DestroyObject = 2
     SetProperty = 3
-    CallMethod = 4,
+    CallMethod = 4
     GameEnd = 5
+
+class gameEndReasons(enum.Enum):
+    Win = 0
+    OutOfBounds = 1
+    TurnStrikeLimitExceeded = 2
+    AppleNotCollectedInLimit = 3
+    SelfCollision = 4
+    MovesLimitExceeded = 5
+
+class nodeTypes(enum.Enum):
+    Input = 0
+    Output = 1
+    Hidden = 2
+
+class activationFunctions(enum.Enum):
+    Logistic = 0
+    Tanh = 1
+    Identity = 2
+    Step = 3
+    Relu = 4
+    Softsign = 5
+    Sinusoid = 6
+    Gaussian = 7
+    BentIdentity = 8
+    HardTanh = 9
+    Absolute = 10
+    Inverse = 11
+    Selu = 12
+    Bipolar = 13
+    BipolarSigmoid = 14
+
+    def Call(self, x : float, derivate : bool) -> float:
+        if self is activationFunctions.Logistic:
+            fx = 1 / (1 + math.exp(-x))
+            if not derivate:
+                return fx
+            return fx * (1 - fx)
+        elif self is activationFunctions.Tanh:
+            if derivate:
+                return 1 - math.pow(math.tanh(x), 2)
+            return math.tanh(x)
+        elif self is activationFunctions.Identity:
+            return 1 if derivate else x
+        elif self is activationFunctions.Step:
+            return 0 if derivate else 1 if x > 0 else 0
+        elif self is activationFunctions.Relu:
+            if derivate:
+                return 1 if x > 0 else 0
+            return x if x > 0 else 0
+        elif self is activationFunctions.Softsign:
+            d = 1 + abs(x)
+            if derivate:
+                return x / math.pow(d, 2)
+            return x / d
+        elif self is activationFunctions.Sinusoid:
+            if derivate:
+                return math.cos(x)
+            return math.sin(x)
+        elif self is activationFunctions.Gaussian:
+            d = math.exp(-math.pow(x, 2))
+            if derivate:
+                return -2 * x * d
+            return d
+        elif self is activationFunctions.BentIdentity:
+            d = math.sqrt(math.pow(x, 2) + 1)
+            if derivate:
+                return x / (2 * d) + 1
+            return (d - 1) / 2 + x
+        elif self is activationFunctions.Bipolar:
+            return 0 if derivate else 1 if x > 0 else -1
+        elif self is activationFunctions.BipolarSigmoid:
+            d = 2 / (1 + math.exp(-x)) - 1
+            if derivate:
+                return 1 / 2 * (1 + d) * (1 - d)
+            return d
+        elif self is activationFunctions.HardTanh:
+            if derivate:
+                return 1 if -1 < x < 1 else 0
+            return max(-1, min(1, x))
+        elif self is activationFunctions.Absolute:
+            if derivate:
+                return -1 if x < 0 else 1
+            return abs(x)
+        elif self is activationFunctions.Inverse:
+            if derivate:
+                return -1
+            return 1 - x
+        elif self is activationFunctions.Selu:
+            alpha = 1.6732632423543772848170429916717
+            scale = 1.0507009873554804934193349852946
+            fx = x if x > 0 else alpha * math.exp(x) - alpha
+            if derivate:
+                return scale if x > 0 else (fx + alpha) * scale
+            return fx * scale
+        else:
+            return 0.0

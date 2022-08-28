@@ -43,6 +43,7 @@ class MasterServer(iSerializable.ISerializable):
         self.slaveServers[server].games[self.slaveServers[server].currentGameId].addCommand(enums.gameCommands.GameEnd, {})
         self.slaveServers[server].games[self.slaveServers[server].currentGameId].setScore(server.score)
         self.slaveServers[server].games[self.slaveServers[server].currentGameId].setMovesCount(server.movesCount)
+        self.slaveServers[server].games[self.slaveServers[server].currentGameId].setFitness(server.client.getFitness())
 
     def start(self):
         self.running = True
@@ -80,8 +81,13 @@ class MasterServer(iSerializable.ISerializable):
             slave.getGamesScoreAvg()
         return sorted(self.slaveServers.values(), key=lambda x: x.gamesAvgScore, reverse=desc)
 
+    def orderServerReportersByFitness(self, desc : bool = True) -> list[serverReporter.ServerReporter] :
+        for slave in self.slaveServers.values():
+            slave.getGamesFitnessAvg()
+        return sorted(self.slaveServers.values(), key=lambda x: x.gamesAvgFitness, reverse=desc)
+
     def stashGeneration(self, genIndex : int):
-        self.stashedServerReporters[genIndex] = self.orderServerReportersByScore()
+        self.stashedServerReporters[genIndex] = self.orderServerReportersByFitness()
         self.slaveServers = {}
 
     def getStashedGeneration(self, genIndex : int) -> list[serverReporter.ServerReporter] :
