@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+import random
+
 import modules.enums as enums
 import modules.instinctAi.connection as connection
 import modules.instinctAi.group as group
@@ -23,7 +26,6 @@ class NodeConnections:
         self.outNodes = []
         self.gatedNodes = []
 
-
 class Node:
 
     # properties ------------
@@ -36,6 +38,7 @@ class Node:
     squash : enums.activationFunctions = enums.activationFunctions.Logistic
     mask = 1.0
     derivative : float = 0.0
+    bias : float = 0.0
 
     # ctor  -------------------------
 
@@ -48,6 +51,7 @@ class Node:
         self.squash = enums.activationFunctions.Logistic
         self.mask = 1.0
         self.derivative = 0.0
+        self.bias = 0 if type is enums.nodeTypes.Input else random.random() * 0.2 - 0.1
 
     # public ----------------
 
