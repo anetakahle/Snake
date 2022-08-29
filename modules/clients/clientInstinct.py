@@ -1,25 +1,33 @@
-from modules import enums, server
+from modules import enums
 from modules.clients.base import clientAiBase as caib
 import modules.serverReporter as serverReporter
 import modules.clients.base.clientAiBaseConfig as clientAiBaseConfig
 import modules.instinctAi.instinct as instinct
 import modules.instinctAi.network as network
+import modules.server as serverNs
 from modules.snakeViews import snakeViewR8DEndNearest as sw8n
 
 class ClientInstinct(caib.ClientAiBase):
 
     # properties ------------------
 
-    instinctInst : instinct = None
-    instinctNetwork : network = None
+    instinctInst : instinct.Instinct = None
+    instinctNetwork : network.Network = None
+    actionsPerSecond = 1
+    server : serverNs.Server = None
     sw8n = object
+    dbId = 1
+    lastOutput : list[float] = []
 
     # ctor -----------------
 
     def __init__(self, instinctInst : instinct, instinctNetwork : network, config = clientAiBaseConfig.defaultClientAiBaseConfig):
         self.instinctInst = instinctInst
         self.instinctNetwork = instinctNetwork
+        self.lastOutput = []
         super().__init__(config)
+
+    # public ----------------
 
     def mixLayers(self, prevGen: list[serverReporter.ServerReporter], clientIndex: int, clientsCount: int):
         pass
@@ -32,14 +40,23 @@ class ClientInstinct(caib.ClientAiBase):
         pass
 
     def onFrame(self):
-        pass
+        if len(self.lastOutput) >= 3:
+            self.render.log("Vaha doleva: " + str(self.lastOutput[0]), enums.logTypes.Ok)
+            self.render.log("Vaha Rovne: " + str(self.lastOutput[1]), enums.logTypes.Ok)
+            self.render.log("Vaha doprava: " + str(self.lastOutput[2]), enums.logTypes.Ok)
+
+
+    def onAppleCollected(self):
+        self.instinctNetwork.updateScore(5)
 
     def brain(self) -> enums.directions:
 
         input = self.createInput()
         output = self.instinctNetwork.activate(input)
+        self.lastOutput = output
 
         actionIndex = output.index(max(output))
+        self.instinctNetwork.updateScore(1)
 
         if actionIndex == 0:
             return enums.directions.Left
@@ -50,15 +67,6 @@ class ClientInstinct(caib.ClientAiBase):
 
     def getFitness(self) -> int:
         return 0
-
-    # properties ------------
-
-    actionsPerSecond = 1
-    server : server = None
-    sw8n = object
-    dbId = 1
-
-    # public ----------------
 
     def createInput(self):  # translating a snake view into the input for the NN
         secondaryView = []

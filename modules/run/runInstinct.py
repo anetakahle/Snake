@@ -4,6 +4,7 @@ import modules.clients.clientGenetic1Layer as clientGenetic1Layer
 import modules.utils.iterable as iterable
 import modules.clients.clientInstinct as clientInstinct
 import modules.instinctAi.instinct as instinct
+import modules.instinctAi.network as network
 
 generations = 1
 agents = 1
@@ -26,7 +27,13 @@ for gen in range(generations):
     print("top prumer fitness: " + str(master.orderServerReportersByFitness()[0].gamesAvgFitness))
     print("top prumer skore: " + str(master.orderServerReportersByScore()[0].gamesAvgScore))
 
+
     master.stashGeneration(gen)
+
+    instinctInst.sortPopulationByScore()
+
+    newGen : list[network.Network] = []
+
 
 topScore = max([x.gamesMaxScore for x in [item for sublist in master.stashedServerReporters.values() for item in sublist]])
 

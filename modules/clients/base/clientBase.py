@@ -15,6 +15,9 @@ class ClientBase(iSerializable.ISerializable):
 
     # public ----------------
 
+    def onAppleCollected(self):
+        pass
+
     def serialize(self) -> int:
         return db.insertGetId(f"""
             insert into ClientGenerationAgents (runtimeId, clientGenerationId) 

@@ -1,7 +1,10 @@
-import random
-import modules.enums as enums
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import modules.instinctAi.node as node
 import modules.instinctAi.connection as connection
+import modules.instinctAi.instinct as instinct
+import random
+import modules.enums as enums
 import math as math
 
 class Network:
@@ -15,10 +18,12 @@ class Network:
     gates : list[connection.Connection]
     selfConnections : list[connection.Connection]
     dropout : int = 0
+    score : int = 0
+    population : list[Network] = []
 
     # ctor --------------------
 
-    def __init__(self, inputSize : int, outputSize : int):
+    def __init__(self, inputSize : int, outputSize : int, score : int):
         self.inputSize = inputSize
         self.outputSize = outputSize
         self.nodes = []
@@ -26,6 +31,8 @@ class Network:
         self.gates = []
         self.selfConnections = []
         self.dropout = 0
+        self.score = score
+        self.population = []
 
         for i in range(inputSize + outputSize):
             self.nodes.append(node.Node(enums.nodeTypes.Input if i < inputSize else enums.nodeTypes.Output))
@@ -65,3 +72,8 @@ class Network:
                 self.selfConnections.append(conn)
 
         return connections
+
+    def updateScore(self, scoreInc : int):
+        self.score += scoreInc
+
+    # private ----------------------

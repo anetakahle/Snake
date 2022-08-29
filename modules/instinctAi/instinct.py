@@ -1,6 +1,7 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import modules.instinctAi.network as network
 import modules.enums as enums
-
 class Instinct:
 
     # properties -----------------
@@ -35,5 +36,16 @@ class Instinct:
         self.population = []
 
         for i in range(self.populationSize):
-            nw = network.Network(self.inputSize, self.outputSize)
+            nw = network.Network(self.inputSize, self.outputSize, 0)
             self.population.append(nw)
+
+
+    def sortPopulationByScore(self) -> list[network.Network]:
+        popSorted = sorted(self.population, key=lambda x: x.score, reverse=True)
+        self.population = popSorted
+        return popSorted
+
+    def evaluate(self):
+        pass
+
+

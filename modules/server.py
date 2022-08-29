@@ -207,6 +207,13 @@ class Server:
         return dis / maxDis
 
 
+    def onAppleCollected(self):
+        self._generateApple()
+        self.score += 1
+        self.moveCountBeforeEatingApple = 0
+        self.client.onAppleCollected()
+
+
     # private ------------------------------
 
     def _newGame(self):
@@ -355,9 +362,7 @@ class Server:
             self.world[new_head_y][new_head_x] = 1
 
         if apple_collected is True:
-            self._generateApple()
-            self.score += 1
-            self.moveCountBeforeEatingApple = 0
+            self.onAppleCollected()
 
             if self.masterServer != None:
                 self.masterServer.reportGameEvent(self, enums.gameCommands.SetProperty, {"property": "score", "op": "inc", "value": 1})

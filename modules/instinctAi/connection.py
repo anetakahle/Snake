@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+import random
+
 import modules.enums as enums
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -19,10 +22,10 @@ class Connection:
     xtraceNodes : list[node.Node]
     xtraceValues : list
 
-    def __init__(self, fromNode : node.Node, toNode : node.Node, weight : float):
+    def __init__(self, fromNode : node.Node, toNode : node.Node, weight : float = None):
         self.fromNode = fromNode
         self.toNode = toNode
-        self.weights = weight
+        self.weight = weight
         self.gater = None
         self.gain = 1.0
         self.eligibility = 0.0
@@ -30,3 +33,6 @@ class Connection:
         self.totalDeltaWeight = 0.0
         self.xtraceNodes = []
         self.xtraceValues = []
+
+        if weight is None:
+            self.weight = random.random() * 0.2 - 0.1
