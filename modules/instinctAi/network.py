@@ -76,4 +76,7 @@ class Network:
     def updateScore(self, scoreInc : int):
         self.score += scoreInc
 
+    def crossOver(self, network1 : Network, network2 : Network):
+        pass
+
     # private ----------------------

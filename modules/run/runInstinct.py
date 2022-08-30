@@ -6,11 +6,12 @@ import modules.clients.clientInstinct as clientInstinct
 import modules.instinctAi.instinct as instinct
 import modules.instinctAi.network as network
 
-generations = 1
-agents = 1
+generations = 10
+agents = 10
 master = masterServer.MasterServer()
+popSize = 16
 
-instinctInst = instinct.Instinct(16, 3, agents, 20, 0.5, 3)
+instinctInst = instinct.Instinct(popSize, 3, agents, 20, 0.5, 3, None, 0.2 * popSize)
 agentIndex = 0
 
 for gen in range(generations):
@@ -33,6 +34,14 @@ for gen in range(generations):
     instinctInst.sortPopulationByScore()
 
     newGen : list[network.Network] = []
+    elites = []
+
+    for i in range(instinctInst.elitism):
+        elites.append(instinctInst.population[i])
+
+    for i in range(popSize - instinctInst.elitism):
+        newGen.append(instinctInst.getOffspring())
+
 
 
 topScore = max([x.gamesMaxScore for x in [item for sublist in master.stashedServerReporters.values() for item in sublist]])

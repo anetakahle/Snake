@@ -22,7 +22,7 @@ class Server:
     lastTurnCommand = None
     enforceSameTurnCommandsLimit = True
     sameTurnCommandsInRowLimit = 10
-    moveCountBeforeEatingAppleLimit = 50
+    moveCountBeforeEatingAppleLimit = 500
     client : clientBase.ClientBase = None
     startTimeSql : str = ''
     gameEndReason : enums.gameEndReasons = None

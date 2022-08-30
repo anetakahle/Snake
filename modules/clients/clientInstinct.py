@@ -45,7 +45,6 @@ class ClientInstinct(caib.ClientAiBase):
             self.render.log("Vaha Rovne: " + str(self.lastOutput[1]), enums.logTypes.Ok)
             self.render.log("Vaha doprava: " + str(self.lastOutput[2]), enums.logTypes.Ok)
 
-
     def onAppleCollected(self):
         self.instinctNetwork.updateScore(5)
 

@@ -211,3 +211,12 @@ class activationFunctions(enum.Enum):
             return fx * scale
         else:
             return 0.0
+
+class selectionMethods(enum.Enum):
+    Power = 0
+    FitnessProportionate = 1
+    Tournament = 2
+
+    PowerParamPower = 4
+    TournamentParamSize = 5
+    TournamentParamProbability = 0.5

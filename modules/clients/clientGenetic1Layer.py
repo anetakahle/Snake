@@ -86,9 +86,9 @@ class ClientGenetic2(caib.ClientAiBase):
             self.render.log("Vaha Rovne: " + str(self.lastValues[1]), enums.logTypes.Ok)
             self.render.log("Vaha doprava: " + str(self.lastValues[2]), enums.logTypes.Ok)
 
-        for i in range(8):
-            viewResult = self.sw8n.getViewR8DEndNearest(enums.directions8(i))
-            self.render.log("View 8 (" + str(enums.directions8(i)) + "): " + str(viewResult), enums.logTypes.Ok)
+        viewResult = self.sw8n.getViewR8DEndNearest()
+        for entry in viewResult:
+            self.render.log("View 8 (" + str(entry) + "): " + str(viewResult), enums.logTypes.Ok)
 
 
     def computeLayers(self):
