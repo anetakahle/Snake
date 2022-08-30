@@ -1,13 +1,13 @@
 from modules import enums
-from modules.agents.base import clientAiBase as caib
+from modules.agents.base import agentAiBase as caib
 import modules.serverReporter as serverReporter
-import modules.agents.base.clientAiBaseConfig as clientAiBaseConfig
+import modules.agents.base.agentAiBaseConfig as clientAiBaseConfig
 import modules.instinctAi.instinct as instinct
 import modules.instinctAi.network as network
 import modules.server as serverNs
 from modules.snakeViews import snakeViewR8DEndNearest as sw8n
 
-class AgentInstinct(caib.ClientAiBase):
+class AgentInstinct(caib.AgentAiBase):
 
     # properties ------------------
 

@@ -1,4 +1,4 @@
-class ClientAiBaseConfig:
+class AgentAiBaseConfig:
 
     # properties ----------------
 
@@ -24,4 +24,4 @@ class ClientAiBaseConfig:
 
 
 
-defaultClientAiBaseConfig = ClientAiBaseConfig()
+defaultClientAiBaseConfig = AgentAiBaseConfig()

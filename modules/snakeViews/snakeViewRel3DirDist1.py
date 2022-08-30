@@ -1,4 +1,4 @@
-import modules.agents.base.clientAiBase as cb
+import modules.agents.base.agentAiBase as cb
 import modules.enums as enums
 
 class SnakeView1():
@@ -8,7 +8,7 @@ class SnakeView1():
 
     # ctor -----------
 
-    def __init__(self, client : cb.ClientAiBase):
+    def __init__(self, client : cb.AgentAiBase):
         self.client = client
 
     # public ------------

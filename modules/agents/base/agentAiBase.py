@@ -1,17 +1,17 @@
 import pygame
 
-import modules.agents.base.clientBase as cb
+import modules.agents.base.agentBase as cb
 import modules.enums as enums
 import modules.renderCallback as rndrCb
 import modules.server as srvr
 import modules.render as rndr
 import modules.serverConfig as serverConfig
 from abc import ABC, abstractmethod
-import modules.agents.base.clientAiBaseConfig as clientAiBaseConfig
+import modules.agents.base.agentAiBaseConfig as clientAiBaseConfig
 import modules.db.dbcontext as db
 import modules.serverReporter as serverReporter
 
-class ClientAiBase(ABC, cb.ClientBase):
+class AgentAiBase(ABC, cb.AgentBase):
 
     # properties --------------
 
@@ -22,7 +22,7 @@ class ClientAiBase(ABC, cb.ClientBase):
     maxFramesIdle = 0
     currentFramesIdle = 0
     movementMode = enums.movementModes.Ai
-    config : clientAiBaseConfig.ClientAiBaseConfig = None
+    config : clientAiBaseConfig.AgentAiBaseConfig = None
     tickFn = None
     genId : int = 0
     agentId : int = 0

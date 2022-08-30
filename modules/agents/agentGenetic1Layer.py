@@ -1,12 +1,12 @@
 import random
 import numpy as np
 from modules import enums, server
-from modules.agents.base import clientAiBase as caib
+from modules.agents.base import agentAiBase as caib
 from modules.GeneticAI import Activation_Sigmoid as sigmoid, Dense_Layer as denl
 from modules.snakeViews import snakeViewR8DEndNearest as sw8n
 import modules.serverReporter as serverReporter
 
-class AgentGenetic2(caib.ClientAiBase):
+class AgentGenetic2(caib.AgentAiBase):
 
     # properties ------------
 

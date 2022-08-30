@@ -1,7 +1,7 @@
 import modules.db.iSerializable as iSerializable
 import modules.db.dbcontext as db
 
-class ClientBase(iSerializable.ISerializable):
+class AgentBase(iSerializable.ISerializable):
 
     # properties ---------------
 

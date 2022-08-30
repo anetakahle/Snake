@@ -1,13 +1,14 @@
 import random
 import modules.enums as enums
-import modules.agents.base.clientAiBase as cb
+import modules.agents.base.agentAiBase as cb
 from modules import serverReporter as serverReporter
 
-class AgentSimple(cb.ClientAiBase):
+
+class AgentSimple(cb.AgentAiBase):
 
     # properties ------------
 
-    actionsPerSecond = 20
+    actionsPerSecond = 30
 
     # ctor -----------
 
@@ -15,7 +16,6 @@ class AgentSimple(cb.ClientAiBase):
         pass
 
     # public ------------
-
 
     def brain(self):
         if self.server.scanDirEq(enums.directions.Left, enums.gameObjects.Apple):
@@ -50,4 +50,5 @@ class AgentSimple(cb.ClientAiBase):
 
     def onFrame(self):
         pass
+
 

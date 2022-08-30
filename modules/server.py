@@ -3,7 +3,7 @@ import math
 import numpy as np
 from modules.internal import gameState as gs
 from modules import enums, serverConfig
-from modules.agents.base import clientBase
+from modules.agents.base import agentBase
 import modules.utils.datetime2 as datetime2
 
 class Server:
@@ -22,14 +22,14 @@ class Server:
     lastTurnCommand = None
     enforceSameTurnCommandsLimit = True
     sameTurnCommandsInRowLimit = 10
-    moveCountBeforeEatingAppleLimit = 500
-    client : clientBase.ClientBase = None
+    moveCountBeforeEatingAppleLimit = 50
+    client : agentBase.AgentBase = None
     startTimeSql : str = ''
     gameEndReason : enums.gameEndReasons = None
 
     # ctor ----------------------
 
-    def __init__(self, client : clientBase.ClientBase, config = serverConfig.defaultConfig):
+    def __init__(self, client : agentBase.AgentBase, config = serverConfig.defaultConfig):
         self.client = client
         self.config = config
         self.masterServer = config.masterServer
