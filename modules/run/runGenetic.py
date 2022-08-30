@@ -1,3 +1,3 @@
-from modules.clients import clientGenetic
+from modules.agents import agentGenetic
 
-agent = clientGenetic.ClientGenetic()
+agent = agentGenetic.AgentGenetic()

@@ -1,11 +1,11 @@
 import random
 
 import modules.enums as enums
-import modules.clients.base.clientAiBase as cb
+import modules.agents.base.clientAiBase as cb
 import modules.serverReporter as serverReporter
 
 
-class ClientRandom(cb.ClientAiBase):
+class AgentRandom(cb.ClientAiBase):
 
     # properties ------------
 
@@ -29,3 +29,7 @@ class ClientRandom(cb.ClientAiBase):
 
     def brain(self):
         return random.choice([enums.directions.Forward, enums.directions.Right, enums.directions.Left])
+
+    def getFitness(self) -> int:
+        return 0
+

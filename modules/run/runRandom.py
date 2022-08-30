@@ -1,3 +1,3 @@
-from modules.clients import clientRandom
+from modules.agents import agentRandom
 
-agent = clientRandom.ClientRandom()
+agent = agentRandom.AgentRandom()

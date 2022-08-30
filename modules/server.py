@@ -3,7 +3,7 @@ import math
 import numpy as np
 from modules.internal import gameState as gs
 from modules import enums, serverConfig
-from modules.clients.base import clientBase
+from modules.agents.base import clientBase
 import modules.utils.datetime2 as datetime2
 
 class Server:

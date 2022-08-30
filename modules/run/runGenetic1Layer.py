@@ -1,3 +1,3 @@
-from modules.clients import clientGenetic1Layer
+from modules.agents import agentGenetic1Layer
 
-agent = clientGenetic1Layer.ClientGenetic2()
+agent = agentGenetic1Layer.AgentGenetic2()

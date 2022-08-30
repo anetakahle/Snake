@@ -1,4 +1,4 @@
-from modules.clients import clientHuman
+from modules.agents import agentHuman
 
-agent = clientHuman.ClientHuman()
+agent = agentHuman.AgentHuman()
 agent.init()

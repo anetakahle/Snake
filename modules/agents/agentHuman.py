@@ -2,10 +2,10 @@ import modules.server as srvr
 import modules.render as rndr
 import modules.enums as enums
 import modules.renderCallback as rndrCb
-import modules.clients.base.clientBase as cb
+import modules.agents.base.clientBase as cb
 import pygame
 
-class ClientHuman(cb.ClientBase):
+class AgentHuman(cb.ClientBase):
 
     # properties ------------
     server = object

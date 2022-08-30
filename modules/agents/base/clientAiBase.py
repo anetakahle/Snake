@@ -1,13 +1,13 @@
 import pygame
 
-import modules.clients.base.clientBase as cb
+import modules.agents.base.clientBase as cb
 import modules.enums as enums
 import modules.renderCallback as rndrCb
 import modules.server as srvr
 import modules.render as rndr
 import modules.serverConfig as serverConfig
 from abc import ABC, abstractmethod
-import modules.clients.base.clientAiBaseConfig as clientAiBaseConfig
+import modules.agents.base.clientAiBaseConfig as clientAiBaseConfig
 import modules.db.dbcontext as db
 import modules.serverReporter as serverReporter
 

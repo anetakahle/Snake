@@ -2,7 +2,7 @@ import uuid
 from modules import server, serverReporter, enums, gameReporter
 import modules.db.dbcontext as db
 import modules.db.iSerializable as iSerializable
-import modules.clients.base.clientAiBase as clientAiBase
+import modules.agents.base.clientAiBase as clientAiBase
 
 class MasterServer(iSerializable.ISerializable):
 

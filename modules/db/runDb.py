@@ -11,5 +11,5 @@ dataSql = pathlib.Path("data.sql").read_text()
 db.execSql(dataSql)
 
 for file in os.listdir("clients"):
-    clientSql = pathlib.Path("clients/" + file).read_text()
+    clientSql = pathlib.Path("agents/" + file).read_text()
     db.execSql(clientSql)

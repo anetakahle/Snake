@@ -1,4 +1,4 @@
-import modules.clients.base.clientAiBase as cb
+import modules.agents.base.clientAiBase as cb
 import modules.enums as enums
 
 class SnakeView1():

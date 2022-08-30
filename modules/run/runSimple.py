@@ -1,5 +1,3 @@
-from modules.clients import clientSimple
-from modules.clients.base.clientAiBaseConfig import ClientAiBaseConfig
+from modules.agents import agentSimple
 
-config = ClientAiBaseConfig(gamesToPlay=1, maxMoves=10)
-agent = clientSimple.ClientSimple(config=config)
+agent = agentSimple.AgentSimple()

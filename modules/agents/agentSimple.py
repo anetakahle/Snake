@@ -1,10 +1,9 @@
 import random
 import modules.enums as enums
-import modules.clients.base.clientAiBase as cb
+import modules.agents.base.clientAiBase as cb
 from modules import serverReporter as serverReporter
 
-
-class ClientSimple(cb.ClientAiBase):
+class AgentSimple(cb.ClientAiBase):
 
     # properties ------------
 
@@ -40,17 +39,15 @@ class ClientSimple(cb.ClientAiBase):
             possibleActions.append(enums.directions.Left)
         return random.choice(possibleActions)
 
-    def mixLayers(self, prevGen: list[serverReporter.ServerReporter], clientIndex: int, clientsCount: int):
-        pass
-
     def getFitness(self) -> int:
         return 0
+
+    def mixLayers(self, prevGen: list[serverReporter.ServerReporter], clientIndex: int, clientsCount: int):
+        pass
 
     def setupLayers(self):
         pass
 
     def onFrame(self):
         pass
-
-
 

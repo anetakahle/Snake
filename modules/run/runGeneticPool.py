@@ -1,10 +1,10 @@
-from modules.clients import clientGenetic
+from modules.agents import agentGenetic
 import modules.masterServer as masterServer
-import modules.clients.base.clientAiBase as cib
-import modules.clients.base.clientAiBaseConfig as cibCfg
+import modules.agents.base.clientAiBase as cib
+import modules.agents.base.clientAiBaseConfig as cibCfg
 import modules.db.dbcontext as db
-import modules.clients.clientGenetic1Layer as clientGenetic1Layer
-import modules.clients.clientRandom as clientRandom
+import modules.agents.agentGenetic1Layer as clientGenetic1Layer
+import modules.agents.agentRandom as clientRandom
 import modules.utils.iterable as iterable
 
 generations = 50
@@ -15,7 +15,7 @@ for gen in range(generations):
 
     # zapiseme info do dict, key = genindex, val = server.reporter/gameReporteret ... mnozina agentu, kteri hrali se stejnymi vahami
     for agent in range(agents):
-        agent = clientGenetic1Layer.ClientGenetic2(cibCfg.ClientAiBaseConfig(master, 2, agentIndex=agent, genIndex=gen, agentsCount = agents))
+        agent = clientGenetic1Layer.AgentGenetic2(cibCfg.ClientAiBaseConfig(master, 2, agentIndex=agent, genIndex=gen, agentsCount = agents))
 
     master.start()
     master.serialize()

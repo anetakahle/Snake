@@ -1,8 +1,8 @@
 import modules.masterServer as masterServer
-import modules.clients.base.clientAiBaseConfig as cibCfg
-import modules.clients.clientGenetic1Layer as clientGenetic1Layer
+import modules.agents.base.clientAiBaseConfig as cibCfg
+import modules.agents.agentGenetic1Layer as clientGenetic1Layer
 import modules.utils.iterable as iterable
-import modules.clients.clientInstinct as clientInstinct
+import modules.agents.agentInstinct as clientInstinct
 import modules.instinctAi.instinct as instinct
 import modules.instinctAi.network as network
 
@@ -19,7 +19,7 @@ for gen in range(generations):
     agentIndex = 0
 
     for agent in range(agents):
-        clientInstinct.ClientInstinct(instinctInst, instinctInst.population[agentIndex], cibCfg.ClientAiBaseConfig(master, 1, agentIndex=agent, genIndex=gen, agentsCount = agents))
+        clientInstinct.AgentInstinct(instinctInst, instinctInst.population[agentIndex], cibCfg.ClientAiBaseConfig(master, 1, agentIndex=agent, genIndex=gen, agentsCount = agents))
         agentIndex += 1
 
     master.start()

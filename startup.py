@@ -1,8 +1,8 @@
-from modules.clients import clientHuman
+from modules.agents import agentHuman
 
 
 def setupClientHuman():
-   humanClient = clientHuman.ClientHuman()
+   humanClient = clientHuman.AgentHuman()
    humanClient.init()
 
 def main():

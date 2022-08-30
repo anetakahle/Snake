@@ -1,14 +1,12 @@
 import random
 import numpy as np
 from modules import enums, server
-from modules.clients.base import clientAiBase as caib
-from modules.GeneticAI import Activation_ReLU as relu, Activation_Sigmoid as sigmoid, Dense_Layer as denl
+from modules.agents.base import clientAiBase as caib
+from modules.GeneticAI import Activation_Sigmoid as sigmoid, Dense_Layer as denl
 from modules.snakeViews import snakeViewR8DEndNearest as sw8n
-from modules import masterServer as masterServer
-import sqlite3
 import modules.serverReporter as serverReporter
 
-class ClientGenetic2(caib.ClientAiBase):
+class AgentGenetic2(caib.ClientAiBase):
 
     # properties ------------
 
@@ -89,7 +87,6 @@ class ClientGenetic2(caib.ClientAiBase):
         viewResult = self.sw8n.getViewR8DEndNearest()
         for entry in viewResult:
             self.render.log("View 8 (" + str(entry) + "): " + str(viewResult), enums.logTypes.Ok)
-
 
     def computeLayers(self):
         self.input = self.createInput()

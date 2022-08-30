@@ -1,14 +1,14 @@
 import random
 import numpy as np
 from modules import enums, server
-from modules.clients.base import clientAiBase as caib
+from modules.agents.base import clientAiBase as caib
 from modules.GeneticAI import Activation_ReLU as relu, Dense_Layer as denl
 from modules.snakeViews import snakeViewR8DEndNearest as sw8n
 import sqlite3
 import modules.serverReporter as serverReporter
 
 
-class ClientGenetic(caib.ClientAiBase):
+class AgentGenetic(caib.ClientAiBase):
 
     # properties ------------
 
